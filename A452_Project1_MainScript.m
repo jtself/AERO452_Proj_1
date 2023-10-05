@@ -17,4 +17,6 @@ r_earth = 6378; % km
 
 %% Section 1
 
+g = pi^2;  
+
 %% Section 2
