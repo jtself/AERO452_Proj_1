@@ -19,4 +19,7 @@ r_earth = 6378; % km
 
 g = pi^2;  
 
+% How are you? 
+
+
 %% Section 2
