@@ -64,10 +64,16 @@ w.chaser = 309.8738; % deg
 alt.chaser = 35786 + 35787 / 2; % altitude
 r.chaser = alt.target - r_earth; % km
 ecc.chaser = 0.0000178;
-theta.chaser = 162.2886; % deg
+theta.chaser = theta.target-.1211259; % deg
 
+h.chaser = findh(r.chaser,mu,ecc.chaser,theta.chaser);
+
+[rECI.chaser,vECI.chaser] = r_and_v_from_COEs(RAAN.chaser,inc.chaser,w.chaser,h.chaser,ecc.chaser,theta.chaser);
 
 % relative motion
-%[r_relx, v_relx, a_relx] = rva_relative(rA,vA,rB,vB); WON'T RUN UNTIL WE
-%DIAL IN OUR CHASER STUFF. tHAT IS NEXT.
+[r_relx, v_relx, a_relx] = rva_relative(rECI.chaser,vECI.chaser,rECI.target,vECI.target); 
+
+rho_rel = norm(r_relx); 
+
+disp(rho_rel + " km")
 
