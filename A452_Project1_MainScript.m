@@ -68,8 +68,24 @@ theta.chaser = theta.target -.1948226; % deg
 T.chaser = 2*pi*sqrt(r.chaser^3/mu);
 h.chaser = findh(r.chaser,mu,ecc.chaser,theta.chaser);
 
+
+% Get DCM Matrix from Target
+QXx = QXx_from_rv_ECI(rECI.target,vECI.target);
+
+% Get r.target in LVLH
+rLVLH.target = QXx*rECI.target;
+
+% Find r.chaser in ECI
+rhoLVLH0 = [0;100;0]; % km
+rLVLH.chaser = rLVLH.target - rhoLVLH0;
+rECI.chaser = QXx' * rLVLH.chaser;
+
+% Find velocity of Chaser in ECI
+vECI.chaser = sqrt(mu./rECI.chaser);
+
+
 % r and v from TLEs BOTH at mission time t0
-[rECI.chaser,vECI.chaser] = r_and_v_from_COEs(RAAN.chaser,inc.chaser,w.chaser,h.chaser,ecc.chaser,theta.chaser);
+
 [rECI.target,vECI.target] = r_and_v_from_COEs(RAAN.target,inc.target,w.target,h.target,ecc.target,theta.target);
 
 % relative motion (shooting for 100km rho apart (LVLH))
@@ -93,8 +109,9 @@ figure
    hold on
 
 % TARGET at mission start time, t0
-plot3(newstate.target(:,1),newstate.target(:,2),newstate.target(:,3),'r','LineWidth',2)
-plot3(newstate.target(end,1),newstate.target(end,2),newstate.target(end,3),'*','LineWidth',5)
+p1 = plot3(newstate.target(:,1),newstate.target(:,2),newstate.target(:,3),'r','LineWidth',2);
+p2 = plot3(newstate.target(end,1),newstate.target(end,2),newstate.target(end,3),'k','LineWidth',5);
+p2.Marker = '*';
 
 % Show CHASER at mission time t0
 plot3(rECI.chaser(1),rECI.chaser(2),rECI.chaser(3),'*','LineWidth',5)
