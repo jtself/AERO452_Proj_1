@@ -1,4 +1,3 @@
-
 %{
  AERO 452: Spaceflight Dynamics II
 Group Project #1
@@ -16,11 +15,47 @@ clear all; close all; clc;
 mu = 398600; % km3/s2
 r_earth = 6378; % km
 
-%% Section 1
+%% Target Information
 
-g = pi^2;  
+% COEs from Heavens-Above
+%{
 
-% How are you? 
+INTELSAT 32E - Orbit
+Sat ID: 41945
+
+Epoch (UTC):	04 October 2023 20:36:45
+Eccentricity:	0.0000178
+inclination:	0.0182°
+perigee height:	35786 km
+apogee height:	35787 km
+right ascension of ascending node:	167.1380°
+argument of perigee:	309.8738°
+revolutions per day:	1.00270360
+mean anomaly at epoch:	162.2886°
+orbit number at epoch:	2434
+%}
+
+% NEXT STEPS
+% COEs to r,v (Justin)
+% Put our chaser vehicle 100km away (rho, LVLH) from Target
+% use universal var to do this. 
 
 
-%% Section 2
+%% Convert COEs to r,v vectors: TARGET
+
+RAAN.target = 167.1380; % deg
+inc.target = 0.0182; % deg
+w.target = 309.8738; % deg
+alt.target = 35786 + 35787 / 2; % altitude
+r.target = alt.target - r_earth; % km
+ecc.target = 0.0000178;
+theta.target = 162.2886; % deg
+
+h.target = findh(r.target,mu,ecc.target,theta.target);
+
+[rECI.target,vECI.target] = r_and_v_from_COEs(RAAN.target,inc.target,w.target,h.target,ecc.target,theta.target);
+
+% relative motion
+%[r_relx, v_relx, a_relx] = rva_relative(rA,vA,rB,vB); WON'T RUN UNTIL WE
+%DIAL IN OUR CHASER STUFF. tHAT IS NEXT.
+
