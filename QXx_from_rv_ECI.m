@@ -4,7 +4,7 @@ function QXx = QXx_from_rv_ECI(r,v)
 
 % convert from ECI to LVLH
     % CALCULATE ANGULAR MOMENTUM VECTOR OF S/C A
-    hA = cross(r,v); % km2/s
+    h = cross(r,v); % km2/s
 
     % CALCULATE UNIT VECTORS OF LVLH FRAME
     i_hat = r / norm(r); 
