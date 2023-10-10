@@ -64,27 +64,28 @@ w.chaser = 309.8738; % deg
 alt.chaser = (35786 + 35787) / 2; % altitude
 r.chaser = alt.target - r_earth; % km
 ecc.chaser = 0.0000178;
-theta.chaser = theta.target-.1948226; % deg
+theta.chaser = theta.target -.1948226; % deg
 T.chaser = 2*pi*sqrt(r.chaser^3/mu);
-
 h.chaser = findh(r.chaser,mu,ecc.chaser,theta.chaser);
 
+% r and v from TLEs BOTH at mission time t0
 [rECI.chaser,vECI.chaser] = r_and_v_from_COEs(RAAN.chaser,inc.chaser,w.chaser,h.chaser,ecc.chaser,theta.chaser);
+[rECI.target,vECI.target] = r_and_v_from_COEs(RAAN.target,inc.target,w.target,h.target,ecc.target,theta.target);
 
-% relative motion
+% relative motion (shooting for 100km rho apart (LVLH))
 [r_relx, v_relx, a_relx] = rva_relative(rECI.chaser,vECI.chaser,rECI.target,vECI.target); 
 
 rho_rel = norm(r_relx); 
 
-disp(rho_rel + " km")
+disp(rho_rel + " km") % yay
 
-% Plot mission time T0 orbit(s)
-tspan = [0 86400]; % seconds = 1 day
+%% Plot mission time T0 orbit(s)
+tspan = [0 T.target]; % seconds = 1 day
 options = odeset('RelTol', 1e-8, 'AbsTol',1e-8);
-state = [rECI.target,vECI.target];
+state0.target = [rECI.target,vECI.target];
 
-% call ode here
-[newtime, newstate] = ode45(@coast_ODE,tspan,state,options,mu);
+% Propogate 1 period TARGET
+[newtime.target, newstate.target] = ode45(@coast_ODE,tspan,state0.target,options,mu);
 
 figure
    h1 = gca;
@@ -92,6 +93,10 @@ figure
    hold on
 
 % TARGET at mission start time, t0
-plot3(newstate(:,1),newstate(:,2),newstate(:,3),'r','LineWidth',2)
-plot3(newstate(end,1),newstate(end,2),newstate(end,3),'*','LineWidth',5)
+plot3(newstate.target(:,1),newstate.target(:,2),newstate.target(:,3),'r','LineWidth',2)
+plot3(newstate.target(end,1),newstate.target(end,2),newstate.target(end,3),'*','LineWidth',5)
+
+% Show CHASER at mission time t0
+plot3(rECI.chaser(1),rECI.chaser(2),rECI.chaser(3),'*','LineWidth',5)
+
 
