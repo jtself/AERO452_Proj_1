@@ -46,28 +46,53 @@ orbit number at epoch:	2434
 RAAN.target = 167.1380; % deg
 inc.target = 0.0182; % deg
 w.target = 309.8738; % deg
-alt.target = 35786 + 35787 / 2; % altitude
+alt.target = (35786 + 35787) / 2; % altitude
 r.target = alt.target - r_earth; % km
 ecc.target = 0.0000178;
 theta.target = 162.2886; % deg
+T.target = 2*pi*sqrt(r.target^3/mu);
 
 h.target = findh(r.target,mu,ecc.target,theta.target);
 
 [rECI.target,vECI.target] = r_and_v_from_COEs(RAAN.target,inc.target,w.target,h.target,ecc.target,theta.target);
-
 
 %% CHASER initial conditions
 
 RAAN.chaser = 167.1380; % deg
 inc.chaser = 0.0182; % deg
 w.chaser = 309.8738; % deg
-alt.chaser = 35786 + 35787 / 2; % altitude
+alt.chaser = (35786 + 35787) / 2; % altitude
 r.chaser = alt.target - r_earth; % km
 ecc.chaser = 0.0000178;
-theta.chaser = 162.2886; % deg
+theta.chaser = theta.target-.1948226; % deg
+T.chaser = 2*pi*sqrt(r.chaser^3/mu);
 
+h.chaser = findh(r.chaser,mu,ecc.chaser,theta.chaser);
+
+[rECI.chaser,vECI.chaser] = r_and_v_from_COEs(RAAN.chaser,inc.chaser,w.chaser,h.chaser,ecc.chaser,theta.chaser);
 
 % relative motion
-%[r_relx, v_relx, a_relx] = rva_relative(rA,vA,rB,vB); WON'T RUN UNTIL WE
-%DIAL IN OUR CHASER STUFF. tHAT IS NEXT.
+[r_relx, v_relx, a_relx] = rva_relative(rECI.chaser,vECI.chaser,rECI.target,vECI.target); 
+
+rho_rel = norm(r_relx); 
+
+disp(rho_rel + " km")
+
+
+% Plot mission time T0 orbit(s)
+tspan = [0 86400]; % seconds = 1 day
+options = odeset('RelTol', 1e-8, 'AbsTol',1e-8);
+state = [rECI.target,vECI.target];
+
+% call ode here
+[newtime, newstate] = ode45(@coast_ODE,tspan,state,options,mu);
+
+figure
+   h1 = gca;
+   earth_sphere(h1)
+   hold on
+
+% TARGET at mission start time, t0
+plot3(newstate(:,1),newstate(:,2),newstate(:,3),'r','LineWidth',2)
+plot3(newstate(end,1),newstate(end,2),newstate(end,3),'*','LineWidth',5)
 

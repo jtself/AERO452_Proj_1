@@ -1,5 +1,16 @@
 function [xx,yy,zz] = earth_sphere(varargin)
- 
+% NOTE TO DR. A and the GRADERS at Cal Poly: 
+% I used this code online to plot the pretty earth for AERO351!
+
+
+
+
+
+
+
+%
+% 
+% 
 % EARTH_SPHERE Generate an earth-sized sphere.
 %   [X,Y,Z] = EARTH_SPHERE(N) generates three (N+1)-by-(N+1)
 %   matrices so that SURFACE(X,Y,Z) produces a sphere equal to 
