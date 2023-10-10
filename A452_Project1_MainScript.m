@@ -78,7 +78,6 @@ rho_rel = norm(r_relx);
 
 disp(rho_rel + " km")
 
-
 % Plot mission time T0 orbit(s)
 tspan = [0 86400]; % seconds = 1 day
 options = odeset('RelTol', 1e-8, 'AbsTol',1e-8);
