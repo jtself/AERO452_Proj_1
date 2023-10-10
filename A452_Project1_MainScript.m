@@ -61,10 +61,10 @@ h.target = findh(r.target,mu,ecc.target,theta.target);
 RAAN.chaser = 167.1380; % deg
 inc.chaser = 0.0182; % deg
 w.chaser = 309.8738; % deg
-alt.chaser = 35786 + 35787 / 2; % altitude
+alt.chaser = (35786 + 35787) / 2; % altitude
 r.chaser = alt.target - r_earth; % km
 ecc.chaser = 0.0000178;
-theta.chaser = theta.target-.1211259; % deg
+theta.chaser = theta.target-.2; % deg
 
 h.chaser = findh(r.chaser,mu,ecc.chaser,theta.chaser);
 
