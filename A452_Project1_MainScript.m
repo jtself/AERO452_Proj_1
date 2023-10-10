@@ -46,7 +46,7 @@ orbit number at epoch:	2434
 RAAN.target = 167.1380; % deg
 inc.target = 0.0182; % deg
 w.target = 309.8738; % deg
-alt.target = 35786 + 35787 / 2; % altitude
+alt.target = (35786 + 35787) / 2; % altitude
 r.target = alt.target - r_earth; % km
 ecc.target = 0.0000178;
 theta.target = 162.2886; % deg
