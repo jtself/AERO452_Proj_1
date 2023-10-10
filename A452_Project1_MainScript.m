@@ -41,5 +41,21 @@ orbit number at epoch:	2434
 % use universal var to do this. 
 
 
+%% Convert COEs to r,v vectors: TARGET
 
-%% Section 2
+RAAN.target = 167.1380; % deg
+inc.target = 0.0182; % deg
+w.target = 309.8738; % deg
+alt.target = 35786 + 35787 / 2; % altitude
+r.target = alt.target - r_earth; % km
+ecc.target = 0.0000178;
+theta.target = 162.2886; % deg
+
+h.target = findh(r.target,mu,ecc.target,theta.target);
+
+[rECI.target,vECI.target] = r_and_v_from_COEs(RAAN.target,inc.target,w.target,h.target,ecc.target,theta.target);
+
+% relative motion
+%[r_relx, v_relx, a_relx] = rva_relative(rA,vA,rB,vB); WON'T RUN UNTIL WE
+%DIAL IN OUR CHASER STUFF. tHAT IS NEXT.
+
