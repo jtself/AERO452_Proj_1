@@ -64,7 +64,7 @@ w.chaser = 309.8738; % deg
 alt.chaser = (35786 + 35787) / 2; % altitude
 r.chaser = alt.target - r_earth; % km
 ecc.chaser = 0.0000178;
-theta.chaser = theta.target-.2; % deg
+theta.chaser = theta.target-.1948226; % deg
 
 h.chaser = findh(r.chaser,mu,ecc.chaser,theta.chaser);
 
