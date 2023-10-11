@@ -54,8 +54,9 @@ T.target = 2*pi*sqrt(r.target^3/mu);
 
 h.target = findh(r.target,mu,ecc.target,theta.target);
 
-[rECI.target,vECI.target] = r_and_v_from_COEs(RAAN.target,inc.target,w.target,h.target,ecc.target,theta.target);
 
+[rECI.target,vECI.target] = r_and_v_from_COEs(RAAN.target,inc.target,w.target,h.target,ecc.target,theta.target);
+h_target_vector = cross(rECI.target,vECI.target);
 %% CHASER initial conditions
 
 RAAN.chaser = 167.1380; % deg
@@ -81,7 +82,9 @@ rLVLH.chaser = rLVLH.target - rhoLVLH0;
 rECI.chaser = QXx' * rLVLH.chaser;
 
 % Find velocity of Chaser in ECI
-vECI.chaser = sqrt(mu./rECI.chaser);
+vECIchaser_norm = sqrt(mu/norm(rECI.chaser));
+vECI_chaser_direct = cross(h_target_vector,rECI.chaser)/norm( cross(h_target_vector,rECI.chaser));
+vECI.chaser = vECIchaser_norm * vECI_chaser_direct;
 
 
 % r and v from TLEs BOTH at mission time t0
