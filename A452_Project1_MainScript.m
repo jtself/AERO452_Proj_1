@@ -59,17 +59,6 @@ h.target = findh(r.target,mu,ecc.target,theta.target);
 h_target_vector = cross(rECI.target,vECI.target);
 %% CHASER initial conditions
 
-RAAN.chaser = 167.1380; % deg
-inc.chaser = 0.0182; % deg
-w.chaser = 309.8738; % deg
-alt.chaser = (35786 + 35787) / 2; % altitude
-r.chaser = alt.target - r_earth; % km
-ecc.chaser = 0.0000178;
-theta.chaser = theta.target -.1948226; % deg
-T.chaser = 2*pi*sqrt(r.chaser^3/mu);
-h.chaser = findh(r.chaser,mu,ecc.chaser,theta.chaser);
-
-
 % Get DCM Matrix from Target
 QXx = QXx_from_rv_ECI(rECI.target,vECI.target);
 
@@ -88,15 +77,13 @@ vECI.chaser = vECIchaser_norm * vECI_chaser_direct;
 
 
 % r and v from TLEs BOTH at mission time t0
-
 [rECI.target,vECI.target] = r_and_v_from_COEs(RAAN.target,inc.target,w.target,h.target,ecc.target,theta.target);
 
 % relative motion (shooting for 100km rho apart (LVLH))
 [r_relx, v_relx, a_relx] = rva_relative(rECI.chaser,vECI.chaser,rECI.target,vECI.target); 
 
 rho_rel = norm(r_relx); 
-
-disp(rho_rel + " km") % yay
+% disp(rho_rel + " km") % yay
 
 %% Plot mission time T0 orbit(s)
 tspan = [0 T.target]; % seconds = 1 day
@@ -118,5 +105,8 @@ p2.Marker = '*';
 
 % Show CHASER at mission time t0
 plot3(rECI.chaser(1),rECI.chaser(2),rECI.chaser(3),'*','LineWidth',5)
+
+%% First maneuver: Hop
+
 
 
