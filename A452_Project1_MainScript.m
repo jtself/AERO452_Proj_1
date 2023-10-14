@@ -76,6 +76,10 @@ vECInorm.chaser = sqrt(mu/norm(rECI.chaser));
 vECIdirect.chaser = cross(h_target_vector,rECI.chaser)/norm( cross(h_target_vector,rECI.chaser));
 vECI.chaser = vECInorm.chaser * vECIdirect.chaser;
 
+% Find LVLH velocity of Chaser and Target
+vLVLH.chaser = QXx*vECI.chaser;
+vLVLH.target = QXx*vECI.target;
+
 % r and v from TLEs BOTH at mission time t0
 [rECI.target,vECI.target] = r_and_v_from_COEs(RAAN.target,inc.target,w.target,h.target,ecc.target,theta.target);
 
@@ -144,65 +148,119 @@ legend('Target','Chaser', 'interpreter','latex','Location', 'best')
 % Parameters for trajectory burn
 period = T.target; 
 t = 3600*2; % for a 2-hour trajectory
-dr = [0;40;0];
-[dv0_PLUS_start_burn,dvf_MINUS_off_burn] = cw_twoimpulse(dr,period,t);
 
-disp("Delta V to get on trajectory in [km/s] is: ") 
-dv0_PLUS_start_burn % just display it
+drf = [0;40;0];
+dr = r_relx;
+dv0 = v_relx;
+[hop1.deltaV, hop1.dv_afterburn] = cw_twoimpulse(dr,drf,dv0, period,t);
+
+disp("DeltaVs of Hop 1") 
+
+% dv0_PLUS_start_burn % just display it
+disp("Delta V: " + hop1.deltaV)
+disp("Delta V After Burn: " + hop1.dv_afterburn)
 
 % Find new velocity vector of chaser to get ON the burn IN ECI
 % current velocity in ECI == vECI.chaser
-vLVLH.chaser = 1;
-
-
-% WORKING HERE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-% Coast function over trajectory timespan
-tspan = [0 t]; 
-options = odeset('RelTol', 1e-8, 'AbsTol',1e-8);
-state0_traj1.chaser = [rLVLH.chaser,dv0_PLUS_start_burn]; % situation at instant of Burn 1
-
-% % % % % %
-% Propogate TRAJECTORY 1
-% % % % % %
-[time1.trajectory1, chaserhop1.trajectory1] = ode45(@coast_ODE,tspan,state0_traj1.chaser,options,mu);
-
-
-% Extract r_bar values
-chaserhop1.traj_r = chaserhop1.trajectory1(:,1:3);
-
-% % % % % %
-% Plot TRAJECTORY 1
-% % % % % %
-figure()
-plot(0,0,'square','Linewidth',2) % target, center of LVLH frame
-hold on
-plot(time1.trajectory1,chaserhop1.traj_r,'x','Linewidth',2) % chaser, in front of target in LVLH frame
-xline(0)
-yline(0)
-
-% Graph pretty 
-ylim padded 
-xlim padded 
-xLab = xlabel('Downrange [km]','Interpreter','latex'); 
-yLab = ylabel('Altitude [km]','Interpreter','latex'); 
-plotTitle = title('LVLH frame: Hop to 40km','interpreter','latex'); 
-set(plotTitle,'FontSize',14,'FontWeight','bold') 
-set(gca,'FontName','Palatino Linotype') 
-set([xLab, yLab],'FontName','Palatino Linotype') 
-set(gca,'FontSize', 9) 
-set([xLab, yLab],'FontSize', 14) 
-grid on 
-legend('Target','Chaser', 'interpreter','latex','Location', 'best')
-
-
-% PLOT
-% coast function 
-
-
-% perform burn off
-% velocity final 
-
-
-
+% hop1.dv0_chaser = -(vLVLH.chaser - dv0_PLUS_start_burn);
+% hop1.vECIchaser0 = QXx*hop1.dv0_chaser;
+% 
+% 
+% 
+% % WORKING HERE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% 
+% % Coast function over trajectory timespan
+% tspan = [0 t]; 
+% options = odeset('RelTol', 1e-8, 'AbsTol',1e-8);
+% state0_traj1.chaser = [rECI.chaser; hop1.vECIchaser0]; % situation at instant of Burn 1
+% state0_traj1.target = [rECI.target; vECI.target]; % situation at instant of Burn 1
+% 
+% 
+% 
+% % % % % % %
+% % Propogate TRAJECTORY 1
+% % % % % % %
+% [hop1.time_chas, hop1.chaser] = ode45(@coast_ODE,tspan,state0_traj1.chaser,options,mu);
+% [hop1.time_targ, hop1.target] = ode45(@coast_ODE,tspan,state0_traj1.target,options,mu);
+% 
+% hop1.r_chaser_after = hop1.chaser(:,1:3);
+% hop1.r_target_after = hop1.target(:,1:3);
+% hop1.v_chaser_after = hop1.chaser(:,4:6);
+% hop1.v_target_after = hop1.target(:,4:6);
+% 
+% 
+% % for i = 1:length(hop1.time_targ)
+% % QXx_loop1 = QXx_from_rv_ECI(hop1.r_target_after(i,1:3)',hop1.v_target_after(i,1:3)');
+% % rLVLH_afterhop1.target(i,1:3) = QXx_loop1 * hop1.r_target_after(i,1:3)';
+% % rLVLH_afterhop1.chaser(i,1:3) = QXx_loop1 * hop1.r_chaser_after(i,1:3)';
+% % end
+% 
+% % rLVLH_afterhop1.chaser = hop1.QXx * rECI_afterhop1.chaser';
+% % rECI_afterhop1.target = rECI_afterhop1.target';
+% % rECI_afterhop1.chaser = rECI_afterhop1.chaser';
+% % rLVLH_afterhop1.target = rLVLH_afterhop1.target';
+% % rLVLH_afterhop1.chaser = rLVLH_afterhop1.chaser';
+% 
+% 
+% figure
+%    h1 = gca;
+%    earth_sphere(h1)
+%    hold on
+% 
+% % TARGET at mission start time, t0
+% p1 = plot3(hop1.r_target_after(end,1),hop1.r_target_after(end,2),hop1.r_target_after(end,3),'r','LineWidth',2);
+% p2 = plot3(hop1.r_chaser_after(end,1),hop1.r_chaser_after(end,2),hop1.r_chaser_after(end,3),'k','LineWidth',2);
+% p1.Marker = 'square';
+% p2.Marker = '*';
+% 
+% % p2 = plot3(newstate.target(end,1),newstate.target(end,2),newstate.target(end,3),'b','LineWidth',5);
+% % p2.Marker = '*';
+% % 
+% % % Show CHASER at mission time t0
+% % p3 = plot3(rECI.chaser(1),rECI.chaser(2),rECI.chaser(3),'k','LineWidth',5);
+% % p3.Marker = '*';
+% 
+% 
+% 
+% 
+% % Extract r_bar values
+% 
+% 
+% 
+% 
+% 
+% % % % % % %
+% % Plot TRAJECTORY 1
+% % % % % % %
+% % figure()
+% % plot(0,0,'square','Linewidth',2) % target, center of LVLH frame
+% % hold on
+% % plot(time1.trajectory1,chaserhop1.traj_r,'x','Linewidth',2) % chaser, in front of target in LVLH frame
+% % xline(0)
+% % yline(0)
+% % 
+% % % Graph pretty 
+% % ylim padded 
+% % xlim padded 
+% % xLab = xlabel('Downrange [km]','Interpreter','latex'); 
+% % yLab = ylabel('Altitude [km]','Interpreter','latex'); 
+% % plotTitle = title('LVLH frame: Hop to 40km','interpreter','latex'); 
+% % set(plotTitle,'FontSize',14,'FontWeight','bold') 
+% % set(gca,'FontName','Palatino Linotype') 
+% % set([xLab, yLab],'FontName','Palatino Linotype') 
+% % set(gca,'FontSize', 9) 
+% % set([xLab, yLab],'FontSize', 14) 
+% % grid on 
+% % legend('Target','Chaser', 'interpreter','latex','Location', 'best')
+% 
+% 
+% % PLOT
+% % coast function 
+% 
+% 
+% % perform burn off
+% % velocity final 
+% 
+% 
+% 
