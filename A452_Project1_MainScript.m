@@ -228,5 +228,11 @@ set([xLab, yLab],'FontSize', 14)
 grid on 
 legend('Target','Hop maneuver', 'Chaser final position','interpreter','latex','Location', 'best')
 
+%% NEXT: Plot this whole (FIRST) maneuver in ECI
+
+%% NEXT: Burn off this hop trajectory onto v-bar in a static fashion
+
+%% alternate: Burn off this trajectory right into football orbit
+
 
 
