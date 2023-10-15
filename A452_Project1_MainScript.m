@@ -230,6 +230,9 @@ legend('Target','Hop maneuver', 'Chaser final position','interpreter','latex','L
 
 %% NEXT: Plot this whole (FIRST) maneuver in ECI
 
+% Convert LVLH state data of the chasrr on the first hop to ECI
+
+
 %% NEXT: Burn off this hop trajectory onto v-bar in a static fashion
 
 %% alternate: Burn off this trajectory right into football orbit
