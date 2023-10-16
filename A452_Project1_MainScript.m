@@ -1,3 +1,4 @@
+
 %{
  AERO 452: Spaceflight Dynamics II
 Group Project #1
@@ -193,11 +194,14 @@ state = [delx
 
 tspan = [0 t]; % length of trajectory flight
 dv = hop1.dv0_PLUS_start_burn;
-state = [dr;dv;rECI.chaser;vECI.chaser];
+state = [dr;dv;rECI.target;vECI.target];
 [timenew,statenew] = ode45(@linearizedEOMs_std,tspan,state,options,h.target,mu);
 
 % Extract data after ODE
-relativePosition = [statenew(:,1),statenew(:,2)]; % since z is zero whole time
+hop1.rECI_target_data = [statenew(:,7),statenew(:,8) statenew(:,9)];
+hop1.vECI_target_data = [statenew(:,10),statenew(:,11) statenew(:,12)];
+relativePosition = [statenew(:,1),statenew(:,2),statenew(:,3)]; % since z is zero whole time
+relativeVelocity = [statenew(:,4),statenew(:,5),statenew(:,6)]; 
 
 figure()
 % target, center of LVLH frame
@@ -230,12 +234,47 @@ legend('Target','Hop maneuver', 'Chaser final position','interpreter','latex','L
 
 %% NEXT: Plot this whole (FIRST) maneuver in ECI
 
-% Convert LVLH state data of the chasrr on the first hop to ECI
+% Convert LVLH state data of the chaser on the first hop to ECI
+% 
+for i = 1:length(timenew)
+    hop1QXx = QXx_from_rv_ECI(hop1.rECI_target_data(i,:)',hop1.vECI_target_data(i,:)');
+    hop1.rECI_chaser_data(i,:) = (hop1QXx' * relativePosition(i,:)') + hop1.rECI_target_data(i,:)';
+    hop1.vECI_chaser_data(i,:) = (hop1QXx' * relativeVelocity(i,:)') + hop1.vECI_target_data(i,:)';
+end
+
+figure
+   h1 = gca;
+   earth_sphere(h1)
+   hold on
+
+% TARGET at mission start time, t0
+p1 = plot3(hop1.rECI_target_data(:,1),hop1.rECI_target_data(:,2),hop1.rECI_target_data(:,3),'r','LineWidth',2);
+p2 = plot3(hop1.rECI_target_data(end,1),hop1.rECI_target_data(end,2),hop1.rECI_target_data(end,3),'*','LineWidth',5);
+% p2.Color = 'b';
+
+% Show CHASER at mission time t0
+p3 = plot3(hop1.rECI_chaser_data(:,1),hop1.rECI_chaser_data(:,2),hop1.rECI_chaser_data(:,3),'k','LineWidth',1.5,'LineStyle','--');
+p4 = plot3(hop1.rECI_chaser_data(end,1),hop1.rECI_chaser_data(end,2),hop1.rECI_chaser_data(end,3),'*','LineWidth',5);
+
+% Graph pretty 
+ylim padded 
+xlim padded 
+zlim padded
+xLab = xlabel('x','Interpreter','latex'); 
+yLab = ylabel('y','Interpreter','latex'); 
+zLab = zlabel('z','Interpreter','latex'); 
+plotTitle = title('Spacecrafts A and B at Mission t0','interpreter','latex'); 
+set(plotTitle,'FontSize',14,'FontWeight','bold') 
+set(gca,'FontName','Palatino Linotype') 
+set([xLab, yLab, zLab],'FontName','Palatino Linotype') 
+set(gca,'FontSize', 9) 
+set([xLab, yLab, zLab],'FontSize', 14) 
+grid on 
+legend('','Target Orbit','Target','Chaser Path', 'Chaser', 'interpreter','latex','Location', 'best')
 
 
 %% NEXT: Burn off this hop trajectory onto v-bar in a static fashion
 
 %% alternate: Burn off this trajectory right into football orbit
-
 
 
