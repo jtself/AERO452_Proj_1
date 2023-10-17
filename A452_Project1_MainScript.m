@@ -394,6 +394,67 @@ set([xLab, yLab, zLab],'FontSize', 14)
 grid on 
 legend('','Target Orbit','Target','Chaser Path', 'Chaser', 'interpreter','latex','Location', 'best')
 
+%% SECOND HOP - from 40 km to 1 km
+
+% Choose trajectory travel time.
+hours = 6; % your choice
+t = 3600*hours;
+
+% Where you want to end up
+Hop2.drf = [0;1;0];
+
+% relative motion for two impulse inputs
+[Hop2.r_relx0, Hop2.v_relx0, Hop2.a_relx0] = rva_relative(...
+    Football1.rECI_chaser_data(end,1:3)',Football1.vECI_chaser_data(end,1:3)',...
+    Football1.rECI_target_data(end,1:3)',Football1.vECI_target_data(end,1:3)'); % note that velocity component does not include dV for Football entry impulse
+
+
+% What the current relative distance and velocity (LVLH) is
+Hop2.dr = Football1.relativePosition(end,1:3)';
+Hop2.dv0 = Football1.relativeVelocity(end,1:3)'; 
+% Call function to find instantaneous dv burn (start of trajectory)
+[Hop2.dv0_PLUS_start_burn,Hop2.dvf_MINUS_off_burn,Hop2.deltaV,Hop2.deltaV_afterBurn] = cw_twoimpulse(Hop2.dr,Hop2.drf,Hop2.dv0,period,t);
+
+disp(" ")
+disp("Hop 2: 40km to 1km") 
+
+% dv0_PLUS_start_burn % just display it
+disp("Delta V: ")
+disp(Hop2.deltaV)
+disp("Delta V After Burn: ")
+disp(Hop2.deltaV_afterBurn)
+
+% SECOND HOP - from 40 km to 1 km
+
+% Choose trajectory travel time.
+hours = 6; % your choice
+t = 3600*hours;
+
+% Where you want to end up
+Hop2.drf = [0;1;0];
+
+% relative motion for two impulse inputs
+[Hop2.r_relx0, Hop2.v_relx0, Hop2.a_relx0] = rva_relative(...
+    Football1.rECI_chaser_data(end,1:3)',Football1.vECI_chaser_data(end,1:3)',...
+    Football1.rECI_target_data(end,1:3)',Football1.vECI_target_data(end,1:3)'); % note that velocity component does not include dV for Football entry impulse
+
+
+% What the current relative distance and velocity (LVLH) is
+Hop2.dr = Football1.relativePosition(end,1:3)';
+Hop2.dv0 = Football1.relativeVelocity(end,1:3)'; 
+% Call function to find instantaneous dv burn (start of trajectory)
+[Hop2.dv0_PLUS_start_burn,Hop2.dvf_MINUS_off_burn,Hop2.deltaV,Hop2.deltaV_afterBurn] = cw_twoimpulse(Hop2.dr,Hop2.drf,Hop2.dv0,period,t);
+
+disp(" ")
+disp("Hop 2: 40km to 1km") 
+
+% dv0_PLUS_start_burn % just display it
+disp("Delta V: ")
+disp(Hop2.deltaV)
+disp("Delta V After Burn: ")
+disp(Hop2.deltaV_afterBurn)
+
+
 %% Plot trajectory: 40km to 1km hop in LVLH
 
 %{
@@ -437,14 +498,14 @@ ylim padded
 xlim padded 
 xLab = xlabel('Downrange [km]','Interpreter','latex'); 
 yLab = ylabel('Altitude [km]','Interpreter','latex'); 
-plotTitle = title('LVLH frame: 100 km to 40 km hop','interpreter','latex'); 
+plotTitle = title('LVLH frame: 40 km to 1 km hop','interpreter','latex'); 
 set(plotTitle,'FontSize',14,'FontWeight','bold') 
 set(gca,'FontName','Palatino Linotype') 
 set([xLab, yLab],'FontName','Palatino Linotype') 
 set(gca,'FontSize', 9) 
 set([xLab, yLab],'FontSize', 14) 
 grid on 
-legend('Target','Hop maneuver', 'Chaser final position','interpreter','latex','Location', 'best')
+legend('Target','Second Hop maneuver', 'Chaser final position','interpreter','latex','Location', 'best')
 
 %% Plot trajectory: 40km to 1km hop in ECI
 
@@ -477,7 +538,7 @@ zlim padded
 xLab = xlabel('x','Interpreter','latex'); 
 yLab = ylabel('y','Interpreter','latex'); 
 zLab = zlabel('z','Interpreter','latex'); 
-plotTitle = title('Spacecrafts A and B at Mission t0','interpreter','latex'); 
+plotTitle = title('HOLD 3: 40km to 1km Hop Maneuver in ECI','interpreter','latex'); 
 set(plotTitle,'FontSize',14,'FontWeight','bold') 
 set(gca,'FontName','Palatino Linotype') 
 set([xLab, yLab, zLab],'FontName','Palatino Linotype') 
