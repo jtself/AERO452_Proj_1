@@ -1,4 +1,3 @@
-
 %{
  AERO 452: Spaceflight Dynamics II
 Group Project #1
@@ -51,7 +50,7 @@ alt.target = (35786 + 35787) / 2; % altitude
 r.target = alt.target + r_earth; % km
 ecc.target = 0.0000178;
 theta.target = 162.2886; % deg
-T.target = ((2*pi)/sqrt(mu)) * r.target^(3/2);
+T.target = 2*pi*sqrt(r.target^3/mu);
 
 h.target = findh(r.target,mu,ecc.target,theta.target);
 
@@ -254,7 +253,7 @@ p2 = plot3(hop1.rECI_target_data(end,1),hop1.rECI_target_data(end,2),hop1.rECI_t
 
 % Show CHASER at mission time t0
 p3 = plot3(hop1.rECI_chaser_data(:,1),hop1.rECI_chaser_data(:,2),hop1.rECI_chaser_data(:,3),'k','LineWidth',1.5,'LineStyle','--');
-p4 = plot3(hop1.rECI_chaser_data(end,1),hop1.rECI_chaser_data(end,2),hop1.rECI_chaser_data(end,3),'*','LineWidth',5);
+p4 = plot3(hop1.rECI_chaser_data(end,1),hop1.rECI_chaser_data(end,2),hop1.rECI_chaser_data(end,3),'square','LineWidth',5);
 
 % Graph pretty 
 ylim padded 
@@ -270,7 +269,7 @@ set([xLab, yLab, zLab],'FontName','Palatino Linotype')
 set(gca,'FontSize', 9) 
 set([xLab, yLab, zLab],'FontSize', 14) 
 grid on 
-legend('','Target Orbit','Target','Chaser Path', 'Chaser', 'interpreter','latex','Location', 'best')
+legend('',' orbit','Target','Chaser', 'interpreter','latex','Location', 'best')
 
 
 %% NEXT: Burn off this hop trajectory onto v-bar in a static fashion FOOTBALL
@@ -280,6 +279,9 @@ b = relativePosition(end,2)/2;
 Football1.xdot0  = ((b)) * n.Target; % altitude direction
 dv_FootBall1_LVLH = [Football1.xdot0 0 0];
 Football1.dvChaser0 = relativeVelocity(end,1:3) + dv_FootBall1_LVLH;
+
+disp(" ")
+disp("Delta V from Football Manuever 1: " + norm(Football1.dvChaser0) + " km/s")
 
 dr_t = relativePosition(end,1:3);
 dv_t = dv_FootBall1_LVLH;
@@ -367,7 +369,6 @@ figure
    earth_sphere(h1)
    hold on
 
-
 % TARGET at mission start time, t0
 p1 = plot3(Football1.rECI_target_data(:,1),Football1.rECI_target_data(:,2),Football1.rECI_target_data(:,3),'r','LineWidth',2);
 p2 = plot3(Football1.rECI_target_data(end,1),Football1.rECI_target_data(end,2),Football1.rECI_target_data(end,3),'*','LineWidth',5);
@@ -392,6 +393,8 @@ set(gca,'FontSize', 9)
 set([xLab, yLab, zLab],'FontSize', 14) 
 grid on 
 legend('','Target Orbit','Target','Chaser Path', 'Chaser', 'interpreter','latex','Location', 'best')
+
+
 
 %% alternate: Burn off this trajectory right into football orbit
 
