@@ -48,10 +48,10 @@ RAAN.target = 167.1380; % deg
 inc.target = 0.0182; % deg
 w.target = 309.8738; % deg
 alt.target = (35786 + 35787) / 2; % altitude
-r.target = alt.target - r_earth; % km
+r.target = alt.target + r_earth; % km
 ecc.target = 0.0000178;
 theta.target = 162.2886; % deg
-T.target = 2*pi*sqrt(r.target^3/mu);
+T.target = ((2*pi)/sqrt(mu)) * r.target^(3/2);
 
 h.target = findh(r.target,mu,ecc.target,theta.target);
 
@@ -273,7 +273,125 @@ grid on
 legend('','Target Orbit','Target','Chaser Path', 'Chaser', 'interpreter','latex','Location', 'best')
 
 
-%% NEXT: Burn off this hop trajectory onto v-bar in a static fashion
+%% NEXT: Burn off this hop trajectory onto v-bar in a static fashion FOOTBALL
+
+n.Target = (2*pi)/T.target; % 1/seconds
+b = relativePosition(end,2)/2;
+Football1.xdot0  = ((b)) * n.Target; % altitude direction
+dv_FootBall1_LVLH = [Football1.xdot0 0 0];
+Football1.dvChaser0 = relativeVelocity(end,1:3) + dv_FootBall1_LVLH;
+
+dr_t = relativePosition(end,1:3);
+dv_t = dv_FootBall1_LVLH;
+dr0 = dr_t;
+dv0 = dv_t;
+
+t = T.target/50000;
+
+Football1.relativePosition = zeros(1:3);
+Football1.relativeVelocity = zeros(1:3);
+
+% ----- ALTERNATE METHOD USING CW MATRIX ---------
+% for i = 1:50000
+% [dr_t,dv_t] = CW_Matrix(t,dr0',dv0',n.Target);
+% Football1.relativePosition(i,1:3) = dr_t;
+% Football1.relativeVelocity(i,1:3) = dv_t;
+% dr0 = dr_t';
+% dv0 = dv_t';
+% end
+
+
+% relative motion
+[Football1.r_relx0, Football1.v_relx0, Football1.a_relx0] = rva_relative(...
+    hop1.rECI_chaser_data(end,1:3)',hop1.vECI_chaser_data(end,1:3)',...
+    hop1.rECI_target_data(end,1:3)',hop1.vECI_target_data(end,1:3)'); % note that velocity component does not include dV for Football entry impulse
+
+
+tspan = [0 T.target]; % length of trajectory flight
+Football1.dr0 = relativePosition(end,1:3);
+Football1.dv0 = relativeVelocity(end,1:3) + dv_FootBall1_LVLH;
+dr = relativePosition(end,1:3);
+dv = Football1.dvChaser0;
+state_FB1 = [dr0';dv0';...
+    hop1.rECI_target_data(end,1:3)';hop1.vECI_target_data(end,1:3)'];
+[Football1.timenew,Football1.statenew] = ode45(@linearizedEOMs_std,tspan,state_FB1,options,h.target,mu);
+
+
+% Extract data after ODE
+Football1.rECI_target_data = [Football1.statenew(:,7),Football1.statenew(:,8) Football1.statenew(:,9)];
+Football1.vECI_target_data = [Football1.statenew(:,10),Football1.statenew(:,11) Football1.statenew(:,12)];
+Football1.relativePosition = [Football1.statenew(:,1),Football1.statenew(:,2),Football1.statenew(:,3)]; % since z is zero whole time
+Football1.relativeVelocity = [Football1.statenew(:,4),Football1.statenew(:,5),Football1.statenew(:,6)]; 
+
+figure()
+% target, center of LVLH frame
+plot(0,0,'square','Linewidth',2)
+hold on
+% Hop trajectory
+plot(Football1.relativePosition(:,2),Football1.relativePosition(:,1),'LineWidth',2)
+
+% Chaser position after hop
+
+% Plot
+p1 = plot(Football1.relativePosition(end,2),Football1.relativePosition(end,1),'x','LineWidth',2);
+p1.Color = 'k';
+xline(0)
+yline(0)
+
+% Graph pretty 
+ylim padded 
+xlim padded 
+xLab = xlabel('Downrange [km]','Interpreter','latex'); 
+yLab = ylabel('Altitude [km]','Interpreter','latex'); 
+plotTitle = title('LVLH frame: 100 km to 40 km hop','interpreter','latex'); 
+set(plotTitle,'FontSize',14,'FontWeight','bold') 
+set(gca,'FontName','Palatino Linotype') 
+set([xLab, yLab],'FontName','Palatino Linotype') 
+set(gca,'FontSize', 9) 
+set([xLab, yLab],'FontSize', 14) 
+grid on 
+legend('Target','Hop maneuver', 'Chaser final position','interpreter','latex','Location', 'best')
+
+%% NEXT: Plot the first FOOTBALL maneuver in ECI
+
+% Convert LVLH state data of the chaser on the first hop to ECI
+% 
+for i = 1:length(Football1.timenew)
+    FB1QXx = QXx_from_rv_ECI(Football1.rECI_target_data(i,:)',Football1.vECI_target_data(i,:)');
+    Football1.rECI_chaser_data(i,:) = (FB1QXx' * Football1.relativePosition(i,:)') + Football1.rECI_target_data(i,:)';
+    Football1.vECI_chaser_data(i,:) = (FB1QXx' * Football1.relativeVelocity(i,:)') + Football1.vECI_target_data(i,:)';
+end
+
+figure
+   h1 = gca;
+   earth_sphere(h1)
+   hold on
+
+
+% TARGET at mission start time, t0
+p1 = plot3(Football1.rECI_target_data(:,1),Football1.rECI_target_data(:,2),Football1.rECI_target_data(:,3),'r','LineWidth',2);
+p2 = plot3(Football1.rECI_target_data(end,1),Football1.rECI_target_data(end,2),Football1.rECI_target_data(end,3),'*','LineWidth',5);
+% p2.Color = 'b';
+
+% Show CHASER at mission time t0
+p3 = plot3(Football1.rECI_chaser_data(:,1),Football1.rECI_chaser_data(:,2),Football1.rECI_chaser_data(:,3),'k','LineWidth',1.5,'LineStyle','--');
+p4 = plot3(Football1.rECI_chaser_data(end,1),Football1.rECI_chaser_data(end,2),Football1.rECI_chaser_data(end,3),'*','LineWidth',5);
+
+% Graph pretty 
+ylim padded 
+xlim padded 
+zlim padded
+xLab = xlabel('x','Interpreter','latex'); 
+yLab = ylabel('y','Interpreter','latex'); 
+zLab = zlabel('z','Interpreter','latex'); 
+plotTitle = title('Spacecrafts A and B at Mission t0','interpreter','latex'); 
+set(plotTitle,'FontSize',14,'FontWeight','bold') 
+set(gca,'FontName','Palatino Linotype') 
+set([xLab, yLab, zLab],'FontName','Palatino Linotype') 
+set(gca,'FontSize', 9) 
+set([xLab, yLab, zLab],'FontSize', 14) 
+grid on 
+legend('','Target Orbit','Target','Chaser Path', 'Chaser', 'interpreter','latex','Location', 'best')
 
 %% alternate: Burn off this trajectory right into football orbit
 
