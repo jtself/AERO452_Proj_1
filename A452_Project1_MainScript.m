@@ -394,6 +394,97 @@ set([xLab, yLab, zLab],'FontSize', 14)
 grid on 
 legend('','Target Orbit','Target','Chaser Path', 'Chaser', 'interpreter','latex','Location', 'best')
 
+%% Plot trajectory: 40km to 1km hop in LVLH
+
+%{
+Use linearized EOMs to hop. 
+state = [delx
+        dely
+        delz
+        delxdot
+        delydot
+        delzdot]
+%}
+
+tspan = [0 t]; % length of trajectory flight
+Hop2.dv = Hop2.dv0_PLUS_start_burn;
+Hop2.state = [Hop2.dr;Hop2.dv;Football1.rECI_target_data(end,1:3)';Football1.vECI_target_data(end,1:3)'];
+[Hop2.timenew,Hop2.statenew] = ode45(@linearizedEOMs_std,tspan,Hop2.state,options,h.target,mu);
+
+% Extract data after ODE
+Hop2.rECI_target_data = [Hop2.statenew(:,7),Hop2.statenew(:,8) Hop2.statenew(:,9)];
+Hop2.vECI_target_data = [Hop2.statenew(:,10),Hop2.statenew(:,11) Hop2.statenew(:,12)];
+Hop2.relativePosition = [Hop2.statenew(:,1),Hop2.statenew(:,2),Hop2.statenew(:,3)]; % since z is zero whole time
+Hop2.relativeVelocity = [Hop2.statenew(:,4),Hop2.statenew(:,5),Hop2.statenew(:,6)]; 
+
+figure()
+% target, center of LVLH frame
+plot(0,0,'square','Linewidth',2)
+hold on
+% Hop trajectory
+plot(Hop2.relativePosition(:,2),Hop2.relativePosition(:,1),'LineWidth',2)
+
+% Chaser position after hop
+
+% Plot
+p1 = plot(Hop2.relativePosition(end,2),Hop2.relativePosition(end,1),'x','LineWidth',2);
+p1.Color = 'k';
+xline(0)
+yline(0)
+
+% Graph pretty 
+ylim padded 
+xlim padded 
+xLab = xlabel('Downrange [km]','Interpreter','latex'); 
+yLab = ylabel('Altitude [km]','Interpreter','latex'); 
+plotTitle = title('LVLH frame: 100 km to 40 km hop','interpreter','latex'); 
+set(plotTitle,'FontSize',14,'FontWeight','bold') 
+set(gca,'FontName','Palatino Linotype') 
+set([xLab, yLab],'FontName','Palatino Linotype') 
+set(gca,'FontSize', 9) 
+set([xLab, yLab],'FontSize', 14) 
+grid on 
+legend('Target','Hop maneuver', 'Chaser final position','interpreter','latex','Location', 'best')
+
+%% Plot trajectory: 40km to 1km hop in ECI
+
+% Convert LVLH state data of the chaser on the first hop to ECI
+% 
+for i = 1:length(Hop2.timenew)
+    hop2QXx = QXx_from_rv_ECI(Hop2.rECI_target_data(i,:)',Hop2.vECI_target_data(i,:)');
+    Hop2.rECI_chaser_data(i,:) = (hop2QXx' * Hop2.relativePosition(i,:)') + Hop2.rECI_target_data(i,:)';
+    Hop2.vECI_chaser_data(i,:) = (hop2QXx' * Hop2.relativeVelocity(i,:)') + Hop2.vECI_target_data(i,:)';
+end
+
+figure
+   h1 = gca;
+   earth_sphere(h1)
+   hold on
+
+% TARGET at mission start time, t0
+p1 = plot3(Hop2.rECI_target_data(:,1),Hop2.rECI_target_data(:,2),Hop2.rECI_target_data(:,3),'r','LineWidth',2);
+p2 = plot3(Hop2.rECI_target_data(end,1),Hop2.rECI_target_data(end,2),Hop2.rECI_target_data(end,3),'*','LineWidth',5);
+% p2.Color = 'b';
+
+% Show CHASER at mission time t0
+p3 = plot3(Hop2.rECI_chaser_data(:,1),Hop2.rECI_chaser_data(:,2),Hop2.rECI_chaser_data(:,3),'k','LineWidth',1.5,'LineStyle','--');
+p4 = plot3(Hop2.rECI_chaser_data(end,1),Hop2.rECI_chaser_data(end,2),Hop2.rECI_chaser_data(end,3),'square','LineWidth',5);
+
+% Graph pretty 
+ylim padded 
+xlim padded 
+zlim padded
+xLab = xlabel('x','Interpreter','latex'); 
+yLab = ylabel('y','Interpreter','latex'); 
+zLab = zlabel('z','Interpreter','latex'); 
+plotTitle = title('Spacecrafts A and B at Mission t0','interpreter','latex'); 
+set(plotTitle,'FontSize',14,'FontWeight','bold') 
+set(gca,'FontName','Palatino Linotype') 
+set([xLab, yLab, zLab],'FontName','Palatino Linotype') 
+set(gca,'FontSize', 9) 
+set([xLab, yLab, zLab],'FontSize', 14) 
+grid on 
+legend('',' orbit','Target','Chaser', 'interpreter','latex','Location', 'best')
 
 
 %% Next move: LAMBERT'S OR SIMPLE HOP?
