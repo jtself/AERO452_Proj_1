@@ -99,7 +99,7 @@ state0.target = [rECI.target,vECI.target];
 % Propogate 1 period TARGET
 [newtime0.target, newstate0.target] = ode45(@coast_ODE,tspan,state0.target,options,mu);
 
-figure
+figure(1)
    h1 = gca;
    earth_sphere(h1)
    hold on
@@ -133,7 +133,7 @@ legend('','Common orbit','Target','Chaser', 'interpreter','latex','Location', 'b
 vbar0.chaser = rLVLH.target(2) - rLVLH.chaser(2);
 rbar0.chaser = rLVLH.target(1) - rLVLH.chaser(1);
 
-figure()
+figure(2)
 plot(0,0,'square','Linewidth',2) % target, center of LVLH frame
 hold on
 plot(vbar0.chaser,rbar0.chaser,'x','Linewidth',2) % chaser, in front of target in LVLH frame
@@ -202,7 +202,7 @@ hop1.vECI_target_data = [statenew(:,10),statenew(:,11) statenew(:,12)];
 relativePosition = [statenew(:,1),statenew(:,2),statenew(:,3)]; % since z is zero whole time
 relativeVelocity = [statenew(:,4),statenew(:,5),statenew(:,6)]; 
 
-figure()
+figure(3)
 % target, center of LVLH frame
 plot(0,0,'square','Linewidth',2)
 hold on
@@ -241,7 +241,7 @@ for i = 1:length(timenew)
     hop1.vECI_chaser_data(i,:) = (hop1QXx' * relativeVelocity(i,:)') + hop1.vECI_target_data(i,:)';
 end
 
-figure
+figure(4)
    h1 = gca;
    earth_sphere(h1)
    hold on
@@ -253,7 +253,7 @@ p2 = plot3(hop1.rECI_target_data(end,1),hop1.rECI_target_data(end,2),hop1.rECI_t
 
 % Show CHASER at mission time t0
 p3 = plot3(hop1.rECI_chaser_data(:,1),hop1.rECI_chaser_data(:,2),hop1.rECI_chaser_data(:,3),'k','LineWidth',1.5,'LineStyle','--');
-p4 = plot3(hop1.rECI_chaser_data(end,1),hop1.rECI_chaser_data(end,2),hop1.rECI_chaser_data(end,3),'square','LineWidth',5);
+p4 = plot3(hop1.rECI_chaser_data(end,1),hop1.rECI_chaser_data(end,2),hop1.rECI_chaser_data(end,3),'*','LineWidth',5);
 
 % Graph pretty 
 ylim padded 
@@ -262,7 +262,7 @@ zlim padded
 xLab = xlabel('x','Interpreter','latex'); 
 yLab = ylabel('y','Interpreter','latex'); 
 zLab = zlabel('z','Interpreter','latex'); 
-plotTitle = title('Spacecrafts A and B at Mission t0','interpreter','latex'); 
+plotTitle = title('100 km to 40 km hop maneuver in ECI','interpreter','latex'); 
 set(plotTitle,'FontSize',14,'FontWeight','bold') 
 set(gca,'FontName','Palatino Linotype') 
 set([xLab, yLab, zLab],'FontName','Palatino Linotype') 
@@ -325,7 +325,7 @@ Football1.vECI_target_data = [Football1.statenew(:,10),Football1.statenew(:,11) 
 Football1.relativePosition = [Football1.statenew(:,1),Football1.statenew(:,2),Football1.statenew(:,3)]; % since z is zero whole time
 Football1.relativeVelocity = [Football1.statenew(:,4),Football1.statenew(:,5),Football1.statenew(:,6)]; 
 
-figure()
+figure(5)
 % target, center of LVLH frame
 plot(0,0,'square','Linewidth',2)
 hold on
@@ -345,14 +345,14 @@ ylim padded
 xlim padded 
 xLab = xlabel('Downrange [km]','Interpreter','latex'); 
 yLab = ylabel('Altitude [km]','Interpreter','latex'); 
-plotTitle = title('LVLH frame: 100 km to 40 km hop','interpreter','latex'); 
+plotTitle = title('HOLD 1: 40 km - 20 km football orbit (LVLH frame)','interpreter','latex'); 
 set(plotTitle,'FontSize',14,'FontWeight','bold') 
 set(gca,'FontName','Palatino Linotype') 
 set([xLab, yLab],'FontName','Palatino Linotype') 
 set(gca,'FontSize', 9) 
 set([xLab, yLab],'FontSize', 14) 
 grid on 
-legend('Target','Hop maneuver', 'Chaser final position','interpreter','latex','Location', 'best')
+legend('Target','Chaser Trajectory (football orbit)', 'Chaser final position','interpreter','latex','Location', 'best')
 
 %% NEXT: Plot the first FOOTBALL maneuver in ECI
 
@@ -364,7 +364,7 @@ for i = 1:length(Football1.timenew)
     Football1.vECI_chaser_data(i,:) = (FB1QXx' * Football1.relativeVelocity(i,:)') + Football1.vECI_target_data(i,:)';
 end
 
-figure
+figure(6)
    h1 = gca;
    earth_sphere(h1)
    hold on
@@ -385,7 +385,7 @@ zlim padded
 xLab = xlabel('x','Interpreter','latex'); 
 yLab = ylabel('y','Interpreter','latex'); 
 zLab = zlabel('z','Interpreter','latex'); 
-plotTitle = title('Spacecrafts A and B at Mission t0','interpreter','latex'); 
+plotTitle = title('HOLD 1: Football orbit in ECI','interpreter','latex'); 
 set(plotTitle,'FontSize',14,'FontWeight','bold') 
 set(gca,'FontName','Palatino Linotype') 
 set([xLab, yLab, zLab],'FontName','Palatino Linotype') 
@@ -396,6 +396,6 @@ legend('','Target Orbit','Target','Chaser Path', 'Chaser', 'interpreter','latex'
 
 
 
-%% alternate: Burn off this trajectory right into football orbit
+%% Next move: LAMBERT'S OR SIMPLE HOP?
 
 
