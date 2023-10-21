@@ -1,6 +1,12 @@
 function QXx = QXx_from_rv_ECI(r,v)
 
-% outputs DCM from input r, v vectors in ECI
+%{
+Outputs Direction Cosine Matrix for ECI --> LVLH frame
+Inputs: r, v vectors (3x1) in ECI
+
+Author: Justin Self
+Cal Poly; Fall 2023
+%}
 
 % convert from ECI to LVLH
     % CALCULATE ANGULAR MOMENTUM VECTOR OF S/C A

@@ -36,10 +36,9 @@ orbit number at epoch:	2434
 %}
 
 % NEXT STEPS
-% COEs to r,v (Justin)
+% COEs to r,v
 % Put our chaser vehicle 100km away (rho, LVLH) from Target
 % use universal var to do this. 
-
 
 %% TARGET initial conditions
 
@@ -119,7 +118,7 @@ zlim padded
 xLab = xlabel('x','Interpreter','latex'); 
 yLab = ylabel('y','Interpreter','latex'); 
 zLab = zlabel('z','Interpreter','latex'); 
-plotTitle = title('Spacecrafts A and B at Mission t0','interpreter','latex'); 
+plotTitle = title('Spacecrafts A and B at Mission $t_0$','interpreter','latex'); 
 set(plotTitle,'FontSize',14,'FontWeight','bold') 
 set(gca,'FontName','Palatino Linotype') 
 set([xLab, yLab, zLab],'FontName','Palatino Linotype') 
@@ -145,7 +144,7 @@ ylim padded
 xlim padded 
 xLab = xlabel('Downrange [km]','Interpreter','latex'); 
 yLab = ylabel('Altitude [km]','Interpreter','latex'); 
-plotTitle = title('LVLH frame: Relative Distance at Mission Start','interpreter','latex'); 
+plotTitle = title('LVLH frame: Relative Distance at Start of Mission ($t_0$)','interpreter','latex'); 
 set(plotTitle,'FontSize',14,'FontWeight','bold') 
 set(gca,'FontName','Palatino Linotype') 
 set([xLab, yLab],'FontName','Palatino Linotype') 
@@ -158,8 +157,15 @@ legend('Target','Chaser', 'interpreter','latex','Location', 'best')
 period = T.target; 
 
 % Choose trajectory travel time.
-hours = 6; % your choice
+%orbits = 1; % your choice
+%t = orbits * T.target;
+
+% Leave the above two lines (orbits; t) COMMENTED OUT.
+hours = 12;
 t = 3600*hours;
+
+% News: If this hop takes too long, it looks like a football orbit and the
+% DV goes out of control (like 1e10!!!!!)
 
 % Where you want to end up
 drf = [0;40;0];
@@ -174,10 +180,9 @@ dv0 = v_relx;
 disp("--------- Hop: 100km to 40km ---------") 
 
 % dv0_PLUS_start_burn % just display it
-disp("Delta V: ")
-disp(hop1.deltaV)
-disp("Delta V After Burn: ")
-disp(hop1.deltaV_afterBurn)
+disp("Delta V0+ is: " + hop1.deltaV*1000 + " m/s")
+disp("Total Delta V for this maneuver (in m/s) is: ")
+disp(hop1.deltaV_afterBurn*1000)
 
 %% Plot trajectory: 100km to 40km hop
 
