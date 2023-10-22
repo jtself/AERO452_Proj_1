@@ -1173,7 +1173,7 @@ disp("MET = " + MET.hold300/24 + " days")
 t = holdLength; % one day in seconds (86400 per normal)
 
 % Where you want to end up
-Hop4.drf = [0;0.021;0]; % km
+Hop4.drf = [0;0.022;0]; % km % THIS IS MODIFIED TO STAY WITHIN +- ONE METER OF 20 M for FB#2
 
 % relative motion for two impulse inputs (last position/veloc)
 rA = hold300.rECI_target_data(end,1:3)';
@@ -1287,56 +1287,69 @@ set([xLab, yLab, zLab],'FontSize', 14)
 grid on 
 legend('',' Target orbit','Target','Chaser orbit','Chaser', 'interpreter','latex','Location', 'best')
 
+%% 300 m to 21 m hop SUMMARY 
+% Written by JS 10/22/23
 
-stophere = 1;
+disp(" ")
+disp("--------- 300 m to 21 m hop maneuver SUMMARY ---------") 
 
+disp("Delta-V for this maneuver was: " + Hop4.DV_total*1000 + " m/s")
 
+missionDV.Hop4 = missionDV.hold300 + Hop4.DV_total*1000;
+
+disp("Total Mission Delta-V so far is: " + missionDV.Hop4 + " m/s")
+
+% Keep track of mission time
+currentManeuver = holdLength/3600; % sec to hours
+MET.Hop4 = MET.hold300 + currentManeuver; % MISSION ELAPSED TIME (hours)
+disp(" ")
+disp("**** Mission Elapsed Time ****")
+disp("MET = " + MET.Hop4 + " hours")
+disp("MET = " + MET.Hop4/24 + " days")
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % NEXT MANEUVER % %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Football between 19 and 21
+close all; clc;
 
-
-b = 1/1000;
+% Set major axis of football orbit (between 19-21 meters away with dv)
+b = 0.15/1000; % one meter football hold around 20 m 
 Football2.xdot0  = ((b)) * n.Target; % altitude direction
 dv_FootBall2_LVLH = [Football2.xdot0 0 0];
 Football2.dvChaser0 = Hop4.relativeVelocity(end,1:3) + dv_FootBall2_LVLH;
 
 disp(" ")
 disp("------------------")
-disp("Delta V from Football Manuever 2: " + norm(Football2.dvChaser0) + " km/s")
+disp("Delta V from Football Manuever 2: " + norm(Football2.dvChaser0)*1000 + " m/s")
 
 Football2.dr_t = Hop4.relativePosition(end,1:3);
 Football2.dv_t = dv_FootBall2_LVLH;
 Football2.dr0 = Football2.dr_t;
 Football2.dv0 = Football2.dv_t;
 
-t = T.target/50000;
+t = holdLength; % 1 day = 86400 sec
 
-Football2.relativePosition = zeros(1:3);
-Football2.relativeVelocity = zeros(1:3);
+Football2.relativePosition = zeros(1,3);
+Football2.relativeVelocity = zeros(1,3);
 
-% % ----- ALTERNATE METHOD USING CW MATRIX ---------
-%  for i = 1:50000
-%  [Football2.dr_t,Football2.dv_t] = CW_Matrix(t,Football2.dr0',Football2.dv0',n.Target);
-%  Football2.relativePosition(i,1:3) = Football2.dr_t;
-%  Football2.relativeVelocity(i,1:3) = Football2.dv_t;
-%  Football2.dr0 = Football2.dr_t';
-%  Football2.dv0 = Football2.dv_t';
-%  end
+% Inputs for relative position calculation
+rA = Hop4.rECI_target_data(end,1:3)';
+vA = Hop4.vECI_target_data(end,1:3)';
+rB = Hop4.rECI_chaser_data(end,1:3)';
+vB = Hop4.vECI_chaser_data(end,1:3)';
 
-% 
 % relative motion
-[Football2.r_relx0, Football2.v_relx0, Football2.a_relx0] = rva_relative(...
-    Hop4.rECI_chaser_data(end,1:3)',Hop4.vECI_chaser_data(end,1:3)',...
-    Hop4.rECI_target_data(end,1:3)',Hop4.vECI_target_data(end,1:3)'); % note that velocity component does not include dV for Football entry impulse
+[Football2.r_relx, Football2.v_relx, ~] = rva_relative(rA,vA,rB,vB);
 
+tspan = [0 t]; % length of trajectory flight
+Football2.dr = Football2.relativePosition(end,1:3);
+Football2.dv = Football2.relativePosition(end,1:3);
 
-tspan = [0 T.target]; % length of trajectory flight
-Football2.dr = relativePosition(end,1:3);
-Football2.dv = Football2.dvChaser0;
 state_FB2 = [Football2.dr0';Football2.dv0';...
-    Hop4.rECI_target_data(end,1:3)';Hop4.vECI_target_data(end,1:3)'];
-[Football2.timenew,Football2.statenew] = ode45(@linearizedEOMs_std,tspan,state_FB2,options,h.target,mu);
-
+Hop4.rECI_target_data(end,1:3)';Hop4.vECI_target_data(end,1:3)'];
+[~,Football2.statenew] = ode45(@linearizedEOMs_std,tspan,state_FB2,options,h.target,mu);
 
 % Extract data after ODE
 Football2.rECI_target_data = [Football2.statenew(:,7),Football2.statenew(:,8) Football2.statenew(:,9)];
@@ -1350,21 +1363,21 @@ figure()
 plot(0,0,'square','Linewidth',2)
 hold on
 % Hop trajectory
-plot(Football2.relativePosition(:,2),Football2.relativePosition(:,1),'LineWidth',2)
+plot(Football2.relativePosition(:,2)*1000,Football2.relativePosition(:,1)*1000,'LineWidth',2)
 
 % Chaser position after hop
 
 % Plot
-p1 = plot(Football2.relativePosition(end,2),Football2.relativePosition(end,1),'x','LineWidth',2);
+p1 = plot(Football2.relativePosition(end,2)*1000,Football2.relativePosition(end,1)*1000,'x','LineWidth',2);
 p1.Color = 'k';
 xline(0)
 yline(0)
 
 % Graph pretty 
-ylim padded 
+ylim([-1 1]) 
 xlim padded 
-xLab = xlabel('Downrange [km]','Interpreter','latex'); 
-yLab = ylabel('Altitude [km]','Interpreter','latex'); 
+xLab = xlabel('Downrange [m]','Interpreter','latex'); 
+yLab = ylabel('Altitude [m]','Interpreter','latex'); 
 plotTitle = title('LVLH frame: Football between 19 m and 21 m','interpreter','latex'); 
 set(plotTitle,'FontSize',14,'FontWeight','bold') 
 set(gca,'FontName','Palatino Linotype') 
@@ -1374,6 +1387,7 @@ set([xLab, yLab],'FontSize', 14)
 grid on 
 legend('Target','Hop maneuver', 'Chaser final position','interpreter','latex','Location', 'best')
 
+breakpoint = 1;
 %% NEXT: Plot the first FOOTBALL maneuver in ECI
 
 % Convert LVLH state data of the chaser on the first hop to ECI
