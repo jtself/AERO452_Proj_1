@@ -168,6 +168,10 @@ set([xLab, yLab],'FontSize', 14)
 grid on 
 legend('Target (A)','Chaser (B)', 'interpreter','latex','Location', 'best')
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % NEXT MANEUVER % %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %% FIRST RENDEZVOUS MANEUVER: 100km to 40km hop
 % Written by JS and SS
 % Approved by JS 10/21/23
@@ -320,6 +324,10 @@ MET.hop1 = hours; % MISSION ELAPSED TIME (hours)
 disp(" ")
 disp("**** Mission Elapsed Time ****")
 disp("MET (just after hop 1) = " + MET.hop1 + " hours")
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % NEXT MANEUVER % %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% NEXT: Burn off this hop trajectory onto v-bar in a static fashion FOOTBALL
 % Written originally by SS
 % Approved by JS 10/21/23
@@ -537,6 +545,9 @@ timewarp = 86400 * (2 - MET.football/24); % SECONDS left to make even 2 days MET
 
 % Let transfer trajectory be some scalar times this value. 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % NEXT MANEUVER % %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% SECOND HOP - from 40 km to 1 km
 
@@ -547,7 +558,6 @@ t = timewarp; % this puts us at an even 2.0 days Mission time so far.
 Hop2.drf = [0;1;0]; % km
 
 % relative motion for two impulse inputs
-
 rA = Football1.rECI_target_data(end,1:3)';
 rB = Football1.rECI_chaser_data(end,1:3)';
 vA = Football1.vECI_target_data(end,1:3)';
@@ -728,7 +738,6 @@ holdLength = 1 * 86400; % days -> seconds
 % Prepare for continuous thrust; v-bar station keeping
 dr = [Hop2.relativePosition_Vect(end,1);Hop2.relativePosition_Vect(end,2);0]; % dr after 40 km - 1 km hop
 dv = [Hop2.relativeVelocity_Vect(end,1);Hop2.relativeVelocity_Vect(end,2);0]; % dv after 40 km - 1 km hop
-state0 = [dr;dv];
 
 %{
 dv_desired = 0;
@@ -751,10 +760,6 @@ dv0 = dv;
 [dv0_plus,DV_0,DV_f,hold2.DV_total] = cw_twoimpulse(dr,drf,dv0,period,t);
 
 disp("DV total for the v-bar station keeping burn is: " + hold2.DV_total*1000 + " m/s"); % for hold 2
-
-% Find chaser position in ECI
-r_targetECI = Hop2.rECI_chaser_data(end,1:3);
-v_targetECI = Hop2.vECI_chaser_data(end,1:3);
 
 % PERFORM V-BAR STATION KEEPING BURN
 tspan = [0 holdLength]; % length of trajectory flight
@@ -796,7 +801,7 @@ plot(0,0,'square','Linewidth',2)
 hold on
 
 % Chaser position after hold (should be 1.0 km dr; 0 dv)
-p1 = plot(hold2.relativePosition_Vect(1),hold2.relativeVelocity_Vect(1),'x','LineWidth',2);
+p1 = plot(hold2.relativePosition_Vect(end,2),hold2.relativeVelocity_Vect(end,1),'x','LineWidth',2);
 p1.Color = 'k';
 xline(0)
 yline(0)
@@ -842,9 +847,9 @@ p4.Color = 'k';
 ylim padded 
 xlim padded 
 zlim padded
-xLab = xlabel('x','Interpreter','latex'); 
-yLab = ylabel('y','Interpreter','latex'); 
-zLab = zlabel('z','Interpreter','latex'); 
+xLab = xlabel('x [km]','Interpreter','latex'); 
+yLab = ylabel('y [km]','Interpreter','latex'); 
+zLab = zlabel('z [km]','Interpreter','latex'); 
 plotTitle = title('V-bar station keeping at 1 km in ECI','interpreter','latex'); 
 set(plotTitle,'FontSize',14,'FontWeight','bold') 
 set(gca,'FontName','Palatino Linotype') 
@@ -874,6 +879,9 @@ disp("**** Mission Elapsed Time ****")
 disp("MET = " + MET.hold2 + " hours")
 disp("MET = " + MET.hold2/24 + " days")
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % NEXT MANEUVER % %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% HOP 3 - From 1 km to 300 m (.30 km)
 % Choose trajectory travel time.
 t = 86400; % one day
@@ -1005,64 +1013,189 @@ disp("**** Mission Elapsed Time ****")
 disp("MET = " + MET.hop3 + " hours")
 disp("MET = " + MET.hop3/24 + " days")
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % NEXT MANEUVER % %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% Hold # 3: Hold at 300 m
+%% HOLD 3: V-BAR station keeping at: dr = 300 m; dv = 0 m/s "hold300"
+% Written by JS 10/22/23
 
-%{
-To do Sunday: 
-1. add v-bar station keeping hold at 300 m 
-2. Summary v-bar at 300 m
-3. check out / modify Hop 4 (300 m to 20 m)
-4 Summary hop 4
-5. Check out / modify hold at 20 m with relative speed (v-bar approach)
-6. V-bar approach summary
-7. Final approach
-8. Final approach summary
-9. Project Summary
-10. WRITE REPORT!
+% Need to thrust continuously to stay in v-bar station keeping orbit
+holdLength = 1 * 86400; % days -> seconds
 
-%}
+% Current position and velocity
+% Prepare for continuous thrust; v-bar station keeping
+dr = [Hop3.relativePosition(end,1);Hop3.relativePosition(end,2);0]; % dr after 1 km to 300 m hop
+dv = [Hop3.relativeVelocity(end,1);Hop3.relativeVelocity(end,2);0]; % dv after 1 km to 300 m hop
+state0 = [dr;dv];
 
-JustinsProgress = 1;
 
+% Calculate dv necessary to keep v-bar "station keeping" orbit
+t = holdLength;
+period = T.target;
+drf = dr;
+dv0 = dv;
+[dv0_plus,DV_0,DV_f,hold300.DV_total] = cw_twoimpulse(dr,drf,dv0,period,t);
+
+disp("DV total for the v-bar station keeping burn is: " + hold300.DV_total*1000 + " m/s"); % for 300m hold
+
+% PERFORM V-BAR STATION KEEPING BURN
+tspan = [0 holdLength]; % length of trajectory flight
+dv = dv0_plus;
+% dr is known
+rECI = Hop3.rECI_chaser_data(end,1:3); % last position of target in ECI
+vECI = Hop3.vECI_chaser_data(end,1:3);
+hold300.state = [dr;dv;rECI';vECI'];
+[~,hold300.statenew] = ode45(@linearizedEOMs_std,tspan,hold300.state,options,h.target,mu);
+
+% Extract data after ODE
+hold300.rECI_target_data = [hold300.statenew(:,7),hold300.statenew(:,8) hold300.statenew(:,9)];
+hold300.vECI_target_data = [hold300.statenew(:,10),hold300.statenew(:,11) hold300.statenew(:,12)];
+hold300.relativePosition_Vect = [hold300.statenew(:,1),hold300.statenew(:,2),hold300.statenew(:,3)]; % since z is zero whole time
+hold300.relativeVelocity_Vect = [hold300.statenew(:,4),hold300.statenew(:,5),hold300.statenew(:,6)]; 
+
+relativePosition = hold300.relativePosition_Vect(end,1:3);
+relativeVeloc = hold300.relativeVelocity_Vect(end,1:3);
+hold300.verifyDist = norm(relativePosition);      % should be 1.0 km
+hold300.verifyVeloc =norm(relativeVeloc);         % should be 0 m/s
+
+% dr should be [1 0 0]
+disp("* CHECK *  Relative distance between target and chaser after 300 m hold is: " + hold300.verifyDist + " km")
+% dv should be [0 0 0]
+disp("* CHECK *  Relative velocity between target and chaser after 300 m hold is: " + hold300.verifyVeloc + " m/s")
+
+% Convert LVLH state chaser data to ECI for plotting
+
+for i = 1:length(hold300.statenew)
+    hold300QXx = QXx_from_rv_ECI(hold300.rECI_target_data(i,:)',hold300.vECI_target_data(i,:)');
+    hold300.rECI_chaser_data(i,:) = (hold300QXx' * hold300.relativePosition_Vect(i,:)') + hold300.rECI_target_data(i,:)';
+    hold300.vECI_chaser_data(i,:) = (hold300QXx' * hold300.relativeVelocity_Vect(i,:)') + hold300.vECI_target_data(i,:)';
+end
+
+%% Plot final position of both s/c after the hold period (LVLH)
+% Written by JS 10/22/23
+figure()
+% target, center of LVLH frame
+plot(0,0,'square','Linewidth',2)
+hold on
+
+% Chaser position after hold (should be 300 m dr; 0 dv)
+p1 = plot(hold300.relativePosition_Vect(end,2)*1000,hold300.relativeVelocity_Vect(end,1)*1000,'x','LineWidth',2);
+p1.Color = 'k';
+xline(0)
+yline(0)
+yline(-150,'r')
+
+% Error box zoomed out
+%dim = [.855 .501 .03 .03]; % [x y w h]
+%annotation('rectangle',dim,'Color','red')
+
+% Error box zoomed in [275 300] m window
+dim = [.75 .415 .155 .205]; % [x y w h]
+annotation('rectangle',dim,'Color','red')
+
+% Graph pretty 
+ylim([-20 20]) 
+xlim ([275 300]) 
+xLab = xlabel('Downrange [m]','Interpreter','latex'); 
+yLab = ylabel('Altitude [m]','Interpreter','latex'); 
+plotTitle = title('LVLH frame: v-bar station keeping at 300 m relative distance','interpreter','latex'); 
+set(plotTitle,'FontSize',14,'FontWeight','bold') 
+set(gca,'FontName','Palatino Linotype') 
+set([xLab, yLab],'FontName','Palatino Linotype') 
+set(gca,'FontSize', 9) 
+set([xLab, yLab],'FontSize', 14) 
+grid on 
+legend('Target','Chaser relative position during hold', '','','Error box: $\pm 5$ m ','interpreter','latex','Location', 'best')
+
+%% Plot final position of both s/c after the hold period (ECI)
+% Written by JS 10/22/23
+
+figure
+   h1 = gca;
+   earth_sphere(h1)
+   hold on
+
+% TARGET orbit during 300 m HOLD
+p1 = plot3(hold300.rECI_target_data(:,1),hold300.rECI_target_data(:,2),hold300.rECI_target_data(:,3),'--r','LineWidth',1);
+% Target position
+p2 = plot3(hold300.rECI_target_data(end,1),hold300.rECI_target_data(end,2),hold300.rECI_target_data(end,3),'square','LineWidth',2);
+p2.Color = 'b';
+
+% Show CHASER position after 300 m v-bar station keeping hold
+p3 = plot3(hold300.rECI_chaser_data(:,1),hold300.rECI_chaser_data(:,2),hold300.rECI_chaser_data(:,3),'r','LineWidth',1);
+p4 = plot3(hold300.rECI_chaser_data(end,1),hold300.rECI_chaser_data(end,2),hold300.rECI_chaser_data(end,3),'x','LineWidth',2);
+p4.Color = 'k';
+
+% Graph pretty 
+ylim padded 
+xlim padded 
+zlim padded
+xLab = xlabel('x','Interpreter','latex'); 
+yLab = ylabel('y','Interpreter','latex'); 
+zLab = zlabel('z','Interpreter','latex'); 
+plotTitle = title('V-bar station keeping at 300 m in ECI','interpreter','latex'); 
+set(plotTitle,'FontSize',14,'FontWeight','bold') 
+set(gca,'FontName','Palatino Linotype') 
+set([xLab, yLab, zLab],'FontName','Palatino Linotype') 
+set(gca,'FontSize', 9) 
+set([xLab, yLab, zLab],'FontSize', 14) 
+grid on 
+legend('',' Target Orbit','Target','Chaser Orbit','Chaser', 'interpreter','latex','Location', 'best')
+
+%% V-Bar Station Keeping Hold @ 300 m: SUMMARY 
+% Written by JS 10/22/23
+
+disp(" ")
+disp("--------- V-Bar station keeping at 300 m relative distance ---------") 
+
+disp("Delta-V for this v-bar station keeping is: " + hold300.DV_total*1000 + " m/s")
+
+missionDV.hold300 = missionDV.hop3 + hold300.DV_total*1000;
+
+disp("Total Mission Delta-V so far is: " + missionDV.hold300 + " m/s")
+
+% Keep track of mission time
+currentManeuver = holdLength/3600; % sec to hours
+MET.hold300 = MET.hop3 + currentManeuver; % MISSION ELAPSED TIME (hours)
+disp(" ")
+disp("**** Mission Elapsed Time ****")
+disp("MET = " + MET.hold300 + " hours")
+disp("MET = " + MET.hold300/24 + " days")
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % NEXT MANEUVER % %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% HOP 4 - From 300 m to 21 m
-% Hop to 21 Meters so we can initiate the Football Orbit After
+% Hop to 21 meters to prepare for the 19-21 m football hold need small dv
 
 % Choose trajectory travel time.
-hours = 6; % Makes sense
-t = 3600*hours;
+t = holdLength; % one day in seconds (86400 per normal)
 
 % Where you want to end up
 Hop4.drf = [0;0.021;0]; % km
 
-% relative motion for two impulse inputs
-[Hop4.r_relx0, Hop4.v_relx0, Hop4.a_relx0] = rva_relative(...
-    Hop3.rECI_chaser_data(end,1:3)',Hop3.vECI_chaser_data(end,1:3)',...
-    Hop3.rECI_target_data(end,1:3)',Hop3.vECI_target_data(end,1:3)'); % note that velocity component does not include dV for Football entry impulse
+% relative motion for two impulse inputs (last position/veloc)
+rA = hold300.rECI_target_data(end,1:3)';
+vA = hold300.rECI_target_data(end,1:3)';
+rB = hold300.rECI_chaser_data(end,1:3)';
+vB = hold300.rECI_chaser_data(end,1:3)';
 
+[Hop4.r_relx, Hop4.v_relx, ~] = rva_relative(rA,vA,rB,vB);
 
 % What the current relative distance and velocity (LVLH) is
-Hop4.dr = Hop3.relativePosition(end,1:3)';
-Hop4.dv0 = Hop3.relativeVelocity(end,1:3)'; 
+Hop4.dr = hold300.relativePosition_Vect(end,1:3)';
+Hop4.dv0 = hold300.relativeVelocity_Vect(end,1:3)'; 
 % Call function to find instantaneous dv burn (start of trajectory)
-[Hop4.dv0_PLUS_start_burn,Hop4.dvf_MINUS_off_burn,Hop4.deltaV,Hop4.deltaV_afterBurn] = cw_twoimpulse(Hop4.dr,Hop4.drf,Hop4.dv0,period,t);
+[Hop4.dv0_plus,DV_0,DV_f,Hop4.DV_total] = cw_twoimpulse(Hop4.dr,Hop4.drf,Hop4.dv0,period,t);
 
 disp(" ")
-disp("--------- Hop 4: 30km to 0.03km (30m) ---------") 
+disp("--------- Hop 4: 300 m  to 21 m ---------") 
 
-% dv0_PLUS_start_burn % just display it
-disp("Delta V: ")
-disp(Hop4.deltaV)
-disp("Delta V After Burn: ")
-disp(Hop4.deltaV_afterBurn)
+% Display maneuver dv:
+disp("DV for the 300 m to 21 m hop is: " + Hop4.DV_total*1000 + " m/s")
 
-% SECOND HOP - from 40 km to 1 km
-
-% Choose trajectory travel time.
-hours = 6; % your choice
-t = 3600*hours;
-
-%% Plot trajectory: 1km to 30 meters hop in LVLH
+%% Plot trajectory: 300 m to 21 m hop in LVLH
 
 %{
 Use linearized EOMs to hop. 
@@ -1075,9 +1208,9 @@ state = [delx
 %}
 
 tspan = [0 t]; % length of trajectory flight
-Hop4.dv = Hop4.dv0_PLUS_start_burn;
-Hop4.state = [Hop4.dr;Hop4.dv;Hop3.rECI_target_data(end,1:3)';Hop3.vECI_target_data(end,1:3)'];
-[Hop4.timenew,Hop4.statenew] = ode45(@linearizedEOMs_std,tspan,Hop4.state,options,h.target,mu);
+Hop4.dv = Hop4.dv0_plus;
+Hop4.state = [Hop4.dr;Hop4.dv;hold300.rECI_target_data(end,1:3)';hold300.vECI_target_data(end,1:3)'];
+[~,Hop4.statenew] = ode45(@linearizedEOMs_std,tspan,Hop4.state,options,h.target,mu);
 
 % Extract data after ODE
 Hop4.rECI_target_data = [Hop4.statenew(:,7),Hop4.statenew(:,8) Hop4.statenew(:,9)];
@@ -1090,22 +1223,21 @@ figure()
 plot(0,0,'square','Linewidth',2)
 hold on
 % Hop trajectory
-plot(Hop4.relativePosition(:,2),Hop4.relativePosition(:,1),'LineWidth',2)
+plot(Hop4.relativePosition(:,2)*1000,Hop4.relativePosition(:,1)*1000,'LineWidth',2)
 
 % Chaser position after hop
-
 % Plot
-p1 = plot(Hop4.relativePosition(end,2),Hop4.relativePosition(end,1),'x','LineWidth',2);
+p1 = plot(Hop4.relativePosition(end,2)*1000,Hop4.relativePosition(end,1)*1000,'x','LineWidth',2);
 p1.Color = 'k';
 xline(0)
 yline(0)
 
 % Graph pretty 
-ylim padded 
+ylim ([-50 100]) 
 xlim padded 
-xLab = xlabel('Downrange [km]','Interpreter','latex'); 
-yLab = ylabel('Altitude [km]','Interpreter','latex'); 
-plotTitle = title('LVLH frame: 30 m to 21 m hop','interpreter','latex'); 
+xLab = xlabel('Downrange [m]','Interpreter','latex'); 
+yLab = ylabel('Altitude [m]','Interpreter','latex'); 
+plotTitle = title('LVLH frame: 300 m to 21 m hop','interpreter','latex'); 
 set(plotTitle,'FontSize',14,'FontWeight','bold') 
 set(gca,'FontName','Palatino Linotype') 
 set([xLab, yLab],'FontName','Palatino Linotype') 
@@ -1114,7 +1246,7 @@ set([xLab, yLab],'FontSize', 14)
 grid on 
 legend('Target','Hop maneuver', 'Chaser final position','interpreter','latex','Location', 'best')
 
-%% Plot trajectory: 1km to 30m hop in ECI
+%% Plot trajectory: 300 m to 21 m hop in ECI
 
 % Convert LVLH state data of the chaser on the first hop to ECI
 % 
@@ -1131,29 +1263,32 @@ figure
 
 % TARGET at mission start time, t0
 p1 = plot3(Hop4.rECI_target_data(:,1),Hop4.rECI_target_data(:,2),Hop4.rECI_target_data(:,3),'r','LineWidth',2);
-p2 = plot3(Hop4.rECI_target_data(end,1),Hop4.rECI_target_data(end,2),Hop4.rECI_target_data(end,3),'*','LineWidth',5);
-% p2.Color = 'b';
+p2 = plot3(Hop4.rECI_target_data(end,1),Hop4.rECI_target_data(end,2),Hop4.rECI_target_data(end,3),'square','LineWidth',2);
+p2.Color = 'b';
 
 % Show CHASER at mission time t0
-p3 = plot3(Hop4.rECI_chaser_data(:,1),Hop4.rECI_chaser_data(:,2),Hop4.rECI_chaser_data(:,3),'k','LineWidth',1.5,'LineStyle','--');
-p4 = plot3(Hop4.rECI_chaser_data(end,1),Hop4.rECI_chaser_data(end,2),Hop4.rECI_chaser_data(end,3),'square','LineWidth',5);
+p3 = plot3(Hop4.rECI_chaser_data(:,1),Hop4.rECI_chaser_data(:,2),Hop4.rECI_chaser_data(:,3),'--r','LineWidth',1);
+p4 = plot3(Hop4.rECI_chaser_data(end,1),Hop4.rECI_chaser_data(end,2),Hop4.rECI_chaser_data(end,3),'x','LineWidth',2);
+p4.Color = 'k';
 
 % Graph pretty 
 ylim padded 
 xlim padded 
 zlim padded
-xLab = xlabel('x','Interpreter','latex'); 
-yLab = ylabel('y','Interpreter','latex'); 
-zLab = zlabel('z','Interpreter','latex'); 
-plotTitle = title('ECI frame: 30 to 21 m hop','latex'); 
+xLab = xlabel('x [km]','Interpreter','latex'); 
+yLab = ylabel('y [km]','Interpreter','latex'); 
+zLab = zlabel('z [km]','Interpreter','latex'); 
+plotTitle = title('ECI frame: 300 m to 21 m hop','interpreter','latex'); 
 set(plotTitle,'FontSize',14,'FontWeight','bold') 
 set(gca,'FontName','Palatino Linotype') 
 set([xLab, yLab, zLab],'FontName','Palatino Linotype') 
 set(gca,'FontSize', 9) 
 set([xLab, yLab, zLab],'FontSize', 14) 
 grid on 
-legend('',' orbit','Target','Chaser', 'interpreter','latex','Location', 'best')
+legend('',' Target orbit','Target','Chaser orbit','Chaser', 'interpreter','latex','Location', 'best')
 
+
+stophere = 1;
 
 
 
