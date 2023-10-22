@@ -540,8 +540,6 @@ timewarp = 86400 * (2 - MET.football/24); % SECONDS left to make even 2 days MET
 
 %% SECOND HOP - from 40 km to 1 km
 
-close all; % while working to speed up code
-
 % Choose trajectory travel time.
 t = timewarp; % this puts us at an even 2.0 days Mission time so far.
 
@@ -877,7 +875,6 @@ disp("MET = " + MET.hold2 + " hours")
 disp("MET = " + MET.hold2/24 + " days")
 
 %% HOP 3 - From 1 km to 300 m (.30 km)
-close all; clc;
 % Choose trajectory travel time.
 t = 86400; % one day
 
