@@ -218,8 +218,8 @@ state = [dr;dv;rECI.target;vECI.target];
 [timenew,statenew] = ode45(@linearizedEOMs_std,tspan,state,options,h.target,mu);
 
 % Extract data after ODE
-hop1.rECI_target_data = [statenew(:,7),statenew(:,8) statenew(:,9)];
-hop1.vECI_target_data = [statenew(:,10),statenew(:,11) statenew(:,12)];
+hop1.rECI_target_data = [statenew(:,7),statenew(:,8), statenew(:,9)];
+hop1.vECI_target_data = [statenew(:,10),statenew(:,11), statenew(:,12)];
 relativePosition_Vect = [statenew(:,1),statenew(:,2),statenew(:,3)]; % since z is zero whole time
 relativeVelocity_Vect = [statenew(:,4),statenew(:,5),statenew(:,6)]; 
 
@@ -406,8 +406,8 @@ state_FB1 = [dr0';dv0';...
 
 
 % Extract data after ODE
-Football1.rECI_target_data = [Football1.statenew(:,7),Football1.statenew(:,8) Football1.statenew(:,9)];
-Football1.vECI_target_data = [Football1.statenew(:,10),Football1.statenew(:,11) Football1.statenew(:,12)];
+Football1.rECI_target_data = [Football1.statenew(:,7),Football1.statenew(:,8), Football1.statenew(:,9)];
+Football1.vECI_target_data = [Football1.statenew(:,10),Football1.statenew(:,11), Football1.statenew(:,12)];
 Football1.relativePosition_Vect = [Football1.statenew(:,1),Football1.statenew(:,2),Football1.statenew(:,3)]; % since z is zero whole time
 Football1.relativeVelocity_Vect = [Football1.statenew(:,4),Football1.statenew(:,5),Football1.statenew(:,6)]; 
 
@@ -594,8 +594,8 @@ Hop2.state = [Hop2.dr;Hop2.dv;Football1.rECI_target_data(end,1:3)';Football1.vEC
 [Hop2.timenew,Hop2.statenew] = ode45(@linearizedEOMs_std,tspan,Hop2.state,options,h.target,mu);
 
 % Extract data after ODE
-Hop2.rECI_target_data = [Hop2.statenew(:,7),Hop2.statenew(:,8) Hop2.statenew(:,9)];
-Hop2.vECI_target_data = [Hop2.statenew(:,10),Hop2.statenew(:,11) Hop2.statenew(:,12)];
+Hop2.rECI_target_data = [Hop2.statenew(:,7),Hop2.statenew(:,8), Hop2.statenew(:,9)];
+Hop2.vECI_target_data = [Hop2.statenew(:,10),Hop2.statenew(:,11), Hop2.statenew(:,12)];
 Hop2.relativePosition_Vect = [Hop2.statenew(:,1),Hop2.statenew(:,2),Hop2.statenew(:,3)]; % since z is zero whole time
 Hop2.relativeVelocity_Vect = [Hop2.statenew(:,4),Hop2.statenew(:,5),Hop2.statenew(:,6)]; 
 
@@ -771,8 +771,8 @@ hold2.state = [dr;dv;rECI';vECI'];
 [~,hold2.statenew] = ode45(@linearizedEOMs_std,tspan,hold2.state,options,h.target,mu);
 
 % Extract data after ODE
-hold2.rECI_target_data = [hold2.statenew(:,7),hold2.statenew(:,8) hold2.statenew(:,9)];
-hold2.vECI_target_data = [hold2.statenew(:,10),hold2.statenew(:,11) hold2.statenew(:,12)];
+hold2.rECI_target_data = [hold2.statenew(:,7),hold2.statenew(:,8), hold2.statenew(:,9)];
+hold2.vECI_target_data = [hold2.statenew(:,10),hold2.statenew(:,11), hold2.statenew(:,12)];
 hold2.relativePosition_Vect = [hold2.statenew(:,1),hold2.statenew(:,2),hold2.statenew(:,3)]; % since z is zero whole time
 hold2.relativeVelocity_Vect = [hold2.statenew(:,4),hold2.statenew(:,5),hold2.statenew(:,6)]; 
 
@@ -918,8 +918,8 @@ Hop3.state = [Hop3.dr;Hop3.dv;rA;vA];
 [~,Hop3.statenew] = ode45(@linearizedEOMs_std,tspan,Hop3.state,options,h.target,mu);
 
 % Extract data after ODE
-Hop3.rECI_target_data = [Hop3.statenew(:,7),Hop3.statenew(:,8) Hop3.statenew(:,9)];
-Hop3.vECI_target_data = [Hop3.statenew(:,10),Hop3.statenew(:,11) Hop3.statenew(:,12)];
+Hop3.rECI_target_data = [Hop3.statenew(:,7),Hop3.statenew(:,8) ,Hop3.statenew(:,9)];
+Hop3.vECI_target_data = [Hop3.statenew(:,10),Hop3.statenew(:,11), Hop3.statenew(:,12)];
 Hop3.relativePosition = [Hop3.statenew(:,1),Hop3.statenew(:,2),Hop3.statenew(:,3)]; % since z is zero whole time
 Hop3.relativeVelocity = [Hop3.statenew(:,4),Hop3.statenew(:,5),Hop3.statenew(:,6)]; 
 
@@ -939,7 +939,7 @@ xline(0)
 yline(0)
 
 % Graph pretty 
-ylim ([-1 1])
+ylim padded
 xlim padded 
 xLab = xlabel('Downrange [m]','Interpreter','latex'); 
 yLab = ylabel('Altitude [m]','Interpreter','latex'); 
@@ -1049,8 +1049,8 @@ hold300.state = [dr;dv;rECI';vECI'];
 [~,hold300.statenew] = ode45(@linearizedEOMs_std,tspan,hold300.state,options,h.target,mu);
 
 % Extract data after ODE
-hold300.rECI_target_data = [hold300.statenew(:,7),hold300.statenew(:,8) hold300.statenew(:,9)];
-hold300.vECI_target_data = [hold300.statenew(:,10),hold300.statenew(:,11) hold300.statenew(:,12)];
+hold300.rECI_target_data = [hold300.statenew(:,7),hold300.statenew(:,8), hold300.statenew(:,9)];
+hold300.vECI_target_data = [hold300.statenew(:,10),hold300.statenew(:,11), hold300.statenew(:,12)];
 hold300.relativePosition_Vect = [hold300.statenew(:,1),hold300.statenew(:,2),hold300.statenew(:,3)]; % since z is zero whole time
 hold300.relativeVelocity_Vect = [hold300.statenew(:,4),hold300.statenew(:,5),hold300.statenew(:,6)]; 
 
@@ -1173,7 +1173,7 @@ disp("MET = " + MET.hold300/24 + " days")
 t = holdLength; % one day in seconds (86400 per normal)
 
 % Where you want to end up
-Hop4.drf = [0;0.022;0]; % km % THIS IS MODIFIED TO STAY WITHIN +- ONE METER OF 20 M for FB#2
+Hop4.drf = [0;0.02025;0]; % km % THIS IS MODIFIED TO STAY WITHIN +- ONE METER OF 20 M for FB#2
 
 % relative motion for two impulse inputs (last position/veloc)
 rA = hold300.rECI_target_data(end,1:3)';
@@ -1213,8 +1213,8 @@ Hop4.state = [Hop4.dr;Hop4.dv;hold300.rECI_target_data(end,1:3)';hold300.vECI_ta
 [~,Hop4.statenew] = ode45(@linearizedEOMs_std,tspan,Hop4.state,options,h.target,mu);
 
 % Extract data after ODE
-Hop4.rECI_target_data = [Hop4.statenew(:,7),Hop4.statenew(:,8) Hop4.statenew(:,9)];
-Hop4.vECI_target_data = [Hop4.statenew(:,10),Hop4.statenew(:,11) Hop4.statenew(:,12)];
+Hop4.rECI_target_data = [Hop4.statenew(:,7),Hop4.statenew(:,8), Hop4.statenew(:,9)];
+Hop4.vECI_target_data = [Hop4.statenew(:,10),Hop4.statenew(:,11), Hop4.statenew(:,12)];
 Hop4.relativePosition = [Hop4.statenew(:,1),Hop4.statenew(:,2),Hop4.statenew(:,3)]; % since z is zero whole time
 Hop4.relativeVelocity = [Hop4.statenew(:,4),Hop4.statenew(:,5),Hop4.statenew(:,6)]; 
 
@@ -1311,34 +1311,141 @@ disp("MET = " + MET.Hop4/24 + " days")
 % % NEXT MANEUVER % %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%% Correction burn: Need to be at true 21 m (v) and 0 (r) in LVLH
+
+% We are not at exactly 21 m (v) and 0 (r); fix that.
+
+% Choose trajectory travel time.
+t = 3600; % one hour long correction burn
+
+% Where you want to end up
+correction.drf = [0;0.02025;0]; % km % THIS IS MODIFIED TO STAY WITHIN +- ONE METER OF 20 M for FB#2
+
+% relative motion for two impulse inputs (last position/veloc)
+rA = Hop4.rECI_target_data(end,1:3)';
+vA = Hop4.rECI_target_data(end,1:3)';
+rB = Hop4.rECI_chaser_data(end,1:3)';
+vB = Hop4.rECI_chaser_data(end,1:3)';
+
+[correction.r_relx, correction.v_relx, ~] = rva_relative(rA,vA,rB,vB);
+
+% What the current relative distance and velocity (LVLH) is
+correction.dr = Hop4.relativePosition(end,1:3)';
+correction.dv0 = Hop4.relativeVelocity(end,1:3)'; 
+% Call function to find instantaneous dv burn (start of trajectory)
+[correction.dv0_plus,DV_0,DV_f,correction.DV_total] = cw_twoimpulse(correction.dr,correction.drf,correction.dv0,period,t);
+
+disp(" ")
+disp("--------- Correction Burn: to true 21 m ---------") 
+
+% Display maneuver dv:
+disp("DV for the correction burn is: " + correction.DV_total*1000 + " m/s")
+
+% % % % % Plot trajectory: correction burn
+
+tspan = [0 t]; % length of trajectory flight
+correction.dv = correction.dv0_plus;
+correction.state = [correction.dr;correction.dv;Hop4.rECI_target_data(end,1:3)';Hop4.vECI_target_data(end,1:3)'];
+[~,correction.statenew] = ode45(@linearizedEOMs_std,tspan,correction.state,options,h.target,mu);
+
+% Extract data after ODE
+correction.rECI_target_data = [correction.statenew(:,7),correction.statenew(:,8), correction.statenew(:,9)];
+correction.vECI_target_data = [correction.statenew(:,10),correction.statenew(:,11), correction.statenew(:,12)];
+correction.relativePosition = [correction.statenew(:,1),correction.statenew(:,2),correction.statenew(:,3)]; % since z is zero whole time
+correction.relativeVelocity = [correction.statenew(:,4),correction.statenew(:,5),correction.statenew(:,6)]; 
+
+% % % Correct the ECI
+for i = 1:length(correction.statenew)
+    correctionQXx = QXx_from_rv_ECI(correction.rECI_target_data(i,:)',correction.vECI_target_data(i,:)');
+    correction.rECI_chaser_data(i,:) = (correctionQXx' * correction.relativePosition(i,:)') + correction.rECI_target_data(i,:)';
+    correction.vECI_chaser_data(i,:) = (correctionQXx' * correction.relativeVelocity(i,:)') + correction.vECI_target_data(i,:)';
+end
+figure()
+% target, center of LVLH frame
+plot(0,0,'square','Linewidth',2)
+hold on
+% Hop trajectory
+plot(correction.relativePosition(:,2)*1000,correction.relativePosition(:,1)*1000,'LineWidth',2)
+
+% Chaser position after hop
+% Plot
+p1 = plot(correction.relativePosition(end,2)*1000,correction.relativePosition(end,1)*1000,'x','LineWidth',2);
+p1.Color = 'k';
+xline(0)
+yline(0)
+
+% Graph pretty 
+ylim padded 
+xlim padded 
+xLab = xlabel('Downrange [m]','Interpreter','latex'); 
+yLab = ylabel('Altitude [m]','Interpreter','latex'); 
+plotTitle = title('LVLH frame: Correction hop','interpreter','latex'); 
+set(plotTitle,'FontSize',14,'FontWeight','bold') 
+set(gca,'FontName','Palatino Linotype') 
+set([xLab, yLab],'FontName','Palatino Linotype') 
+set(gca,'FontSize', 9) 
+set([xLab, yLab],'FontSize', 14) 
+grid on 
+legend('Target','Hop maneuver', 'Chaser final position','interpreter','latex','Location', 'best')
+
+
+
+%% Correction burn SUMMARY
+% Written by JS 10/22/23
+
+disp(" ")
+disp("--------- Correction burn at ~21 meters ---------") 
+
+disp("Delta-V for this maneuver was: " + correction.DV_total*1000 + " m/s")
+
+missionDV.correction = missionDV.Hop4 + correction.DV_total*1000;
+
+disp("Total Mission Delta-V so far is: " + missionDV.correction + " m/s")
+
+% Keep track of mission time
+currentManeuver = t/3600; % sec to hours
+MET.correction = MET.Hop4 + currentManeuver; % MISSION ELAPSED TIME (hours)
+disp(" ")
+disp("**** Mission Elapsed Time ****")
+disp("MET = " + MET.correction + " hours")
+disp("MET = " + MET.correction/24 + " days")
+disp("We will need an additional 23 hours to make an even 7 days. ")
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % NEXT MANEUVER % %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Time is off after the correction burn. Let's get back on track with whole
+% numbers (we will take up the slack with the final burn)
+
+% Need additional 23 hours. ***
 %% Football between 19 and 21
-close all; clc;
 
 % Set major axis of football orbit (between 19-21 meters away with dv)
-b = 0.15/1000; % one meter football hold around 20 m 
+b = 0.1/1000; % one meter football hold around 20 m 
 Football2.xdot0  = ((b)) * n.Target; % altitude direction
 dv_FootBall2_LVLH = [Football2.xdot0 0 0];
-Football2.dvChaser0 = Hop4.relativeVelocity(end,1:3) + dv_FootBall2_LVLH;
+Football2.dvChaser0 = correction.relativeVelocity(end,1:3) + dv_FootBall2_LVLH;
 
 disp(" ")
 disp("------------------")
 disp("Delta V from Football Manuever 2: " + norm(Football2.dvChaser0)*1000 + " m/s")
 
-Football2.dr_t = Hop4.relativePosition(end,1:3);
+Football2.dr_t = correction.relativePosition(end,1:3);
 Football2.dv_t = dv_FootBall2_LVLH;
 Football2.dr0 = Football2.dr_t;
 Football2.dv0 = Football2.dv_t;
 
-t = holdLength; % 1 day = 86400 sec
+t = T.target; % 23 hours (to make up for that 1 hour correction burn earlier)
 
 Football2.relativePosition = zeros(1,3);
 Football2.relativeVelocity = zeros(1,3);
 
 % Inputs for relative position calculation
-rA = Hop4.rECI_target_data(end,1:3)';
-vA = Hop4.vECI_target_data(end,1:3)';
-rB = Hop4.rECI_chaser_data(end,1:3)';
-vB = Hop4.vECI_chaser_data(end,1:3)';
+rA = correction.rECI_target_data(end,1:3)';
+vA = correction.vECI_target_data(end,1:3)';
+rB = correction.rECI_chaser_data(end,1:3)';
+vB = correction.vECI_chaser_data(end,1:3)';
 
 % relative motion
 [Football2.r_relx, Football2.v_relx, ~] = rva_relative(rA,vA,rB,vB);
@@ -1348,16 +1455,16 @@ Football2.dr = Football2.relativePosition(end,1:3);
 Football2.dv = Football2.relativePosition(end,1:3);
 
 state_FB2 = [Football2.dr0';Football2.dv0';...
-Hop4.rECI_target_data(end,1:3)';Hop4.vECI_target_data(end,1:3)'];
+correction.rECI_target_data(end,1:3)'; correction.vECI_target_data(end,1:3)'];
 [~,Football2.statenew] = ode45(@linearizedEOMs_std,tspan,state_FB2,options,h.target,mu);
 
 % Extract data after ODE
-Football2.rECI_target_data = [Football2.statenew(:,7),Football2.statenew(:,8) Football2.statenew(:,9)];
-Football2.vECI_target_data = [Football2.statenew(:,10),Football2.statenew(:,11) Football2.statenew(:,12)];
+Football2.rECI_target_data = [Football2.statenew(:,7),Football2.statenew(:,8), Football2.statenew(:,9)];
+Football2.vECI_target_data = [Football2.statenew(:,10),Football2.statenew(:,11), Football2.statenew(:,12)];
 Football2.relativePosition = [Football2.statenew(:,1),Football2.statenew(:,2),Football2.statenew(:,3)]; % since z is zero whole time
 Football2.relativeVelocity = [Football2.statenew(:,4),Football2.statenew(:,5),Football2.statenew(:,6)]; 
 
-
+% Plot in LVLH
 figure()
 % target, center of LVLH frame
 plot(0,0,'square','Linewidth',2)
@@ -1366,7 +1473,6 @@ hold on
 plot(Football2.relativePosition(:,2)*1000,Football2.relativePosition(:,1)*1000,'LineWidth',2)
 
 % Chaser position after hop
-
 % Plot
 p1 = plot(Football2.relativePosition(end,2)*1000,Football2.relativePosition(end,1)*1000,'x','LineWidth',2);
 p1.Color = 'k';
@@ -1374,7 +1480,7 @@ xline(0)
 yline(0)
 
 % Graph pretty 
-ylim([-1 1]) 
+ylim padded
 xlim padded 
 xLab = xlabel('Downrange [m]','Interpreter','latex'); 
 yLab = ylabel('Altitude [m]','Interpreter','latex'); 
@@ -1387,12 +1493,12 @@ set([xLab, yLab],'FontSize', 14)
 grid on 
 legend('Target','Hop maneuver', 'Chaser final position','interpreter','latex','Location', 'best')
 
-breakpoint = 1;
+
 %% NEXT: Plot the first FOOTBALL maneuver in ECI
 
 % Convert LVLH state data of the chaser on the first hop to ECI
 % 
-for i = 1:length(Football2.timenew)
+for i = 1:length(Football2.statenew)
     FB2QXx = QXx_from_rv_ECI(Football2.rECI_target_data(i,:)',Football2.vECI_target_data(i,:)');
     Football2.rECI_chaser_data(i,:) = (FB2QXx' * Football2.relativePosition(i,:)') + Football2.rECI_target_data(i,:)';
     Football2.vECI_chaser_data(i,:) = (FB2QXx' * Football2.relativeVelocity(i,:)') + Football2.vECI_target_data(i,:)';
@@ -1405,12 +1511,13 @@ figure
 
 % TARGET at mission start time, t0
 p1 = plot3(Football2.rECI_target_data(:,1),Football2.rECI_target_data(:,2),Football2.rECI_target_data(:,3),'r','LineWidth',2);
-p2 = plot3(Football2.rECI_target_data(end,1),Football2.rECI_target_data(end,2),Football2.rECI_target_data(end,3),'*','LineWidth',5);
-% p2.Color = 'b';
+p2 = plot3(Football2.rECI_target_data(end,1),Football2.rECI_target_data(end,2),Football2.rECI_target_data(end,3),'square','LineWidth',2);
+p2.Color = 'b';
 
 % Show CHASER at mission time t0
-p3 = plot3(Football2.rECI_chaser_data(:,1),Football2.rECI_chaser_data(:,2),Football2.rECI_chaser_data(:,3),'k','LineWidth',1.5,'LineStyle','--');
-p4 = plot3(Football2.rECI_chaser_data(end,1),Football2.rECI_chaser_data(end,2),Football2.rECI_chaser_data(end,3),'*','LineWidth',5);
+p3 = plot3(Football2.rECI_chaser_data(:,1),Football2.rECI_chaser_data(:,2),Football2.rECI_chaser_data(:,3),'--r','LineWidth',1);
+p4 = plot3(Football2.rECI_chaser_data(end,1),Football2.rECI_chaser_data(end,2),Football2.rECI_chaser_data(end,3),'x','LineWidth',2);
+p4.Color = 'k';
 
 % Graph pretty 
 ylim padded 
@@ -1428,6 +1535,47 @@ set([xLab, yLab, zLab],'FontSize', 14)
 grid on 
 legend('','Target Orbit','Target','Chaser Path', 'Chaser', 'interpreter','latex','Location', 'best')
 
+%% Football 20m hold SUMMARY
+close all;
+% Written by JS 10/22/23
 
+disp(" ")
+disp("--------- Football trajectory hold at ~20 m ---------") 
 
+Football2.DV_total = norm(Football2.dvChaser0)*1000;
+disp("Delta-V for this maneuver was: " + Football2.DV_total + " m/s")
 
+missionDV.Football2 = missionDV.correction + Football2.DV_total*1000;
+
+disp("Total Mission Delta-V so far is: " + missionDV.Football2 + " m/s")
+
+% Keep track of mission time
+currentManeuver = t/3600; % sec to hours
+MET.Football2 = MET.correction + currentManeuver; % MISSION ELAPSED TIME (hours)
+disp(" ")
+disp("**** Mission Elapsed Time ****")
+disp("MET = " + MET.Football2 + " hours")
+disp("MET = " + MET.Football2/24 + " days")
+
+t2tenDays.hours = 10 - MET.Football2/24; % hours
+t2tenDays.seconds = t2tenDays.hours*60; % sec
+disp("We will need an additional " + t2tenDays.hours + " hours to make our ten day goal")
+disp("Which is: " + t2tenDays.seconds + " seconds to make our ten day goal")
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % NEXT MANEUVER % %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Final maneuver: v-bar approach to rendezvous. 
+
+% Burn off old trajectory into super slow v-bar approach.
+
+% Plot final approach in LVLH
+
+% Plot final approach in ECI
+
+% Plot last few hops of Mission in LVLH
+
+% Report final mission time (==10 days exactly)
+
+% Report final mission delta-v used (should be in the 3ish m/s range)
