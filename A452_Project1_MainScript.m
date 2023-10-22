@@ -149,7 +149,7 @@ pt = plot(0,0,'square','Linewidth',2); % target, center of LVLH frame
 pt.Color = 'blue';
 hold on
 pc = plot(vbar0.chaser,rbar0.chaser,'x','Linewidth',2);
-pc.Color = 'r';
+pc.Color = 'k';
 % chaser, in front of target in LVLH frame
 xline(0)
 yline(0)
@@ -1006,13 +1006,25 @@ disp("MET = " + MET.hop3 + " hours")
 disp("MET = " + MET.hop3/24 + " days")
 
 
-
 %% Hold # 3: Hold at 300 m
 
+%{
+To do Sunday: 
+1. add v-bar station keeping hold at 300 m 
+2. Summary v-bar at 300 m
+3. check out / modify Hop 4 (300 m to 20 m)
+4 Summary hop 4
+5. Check out / modify hold at 20 m with relative speed (v-bar approach)
+6. V-bar approach summary
+7. Final approach
+8. Final approach summary
+9. Project Summary
+10. WRITE REPORT!
 
-
+%}
 
 JustinsProgress = 1;
+
 %% HOP 4 - From 300 m to 21 m
 % Hop to 21 Meters so we can initiate the Football Orbit After
 
