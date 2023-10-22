@@ -7,7 +7,9 @@ function [dydt] = linearizedEOMs_std(time,state,h,mu)
 % for use in ode45
 
 %{
-Note that y = state = [ delx
+Note that y = state = [ [r] (3x1)
+                        [v] (3x1)
+                        delx
                         dely
                         delz
                         delxdot
