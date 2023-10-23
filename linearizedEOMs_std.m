@@ -7,7 +7,9 @@ function [dydt] = linearizedEOMs_std(time,state,h,mu)
 % for use in ode45
 
 %{
-Note that y = state = [ delx
+Note that y = state = [ [r] (3x1)
+                        [v] (3x1)
+                        delx
                         dely
                         delz
                         delxdot
@@ -28,7 +30,7 @@ dydt(1) = y(4);
 dydt(2) = y(5);
 dydt(3) = y(6);
 
-% Linearized EOMs
+% Linearized EOMs for acceleration
 dydt(4) = ((2*mu)/(R^3) + (h^2 / R^4)) * y(1) - (2 * dot(V,rvect)*(h/R^4)) * y(2) + 2*(h/R^2)*y(5);
 dydt(5) = ((h^2)/(R^4) - (mu / R^3)) * y(2) + (2 * dot(V,rvect)*(h/R^4)) * y(1) - 2*(h/R^2)*y(4);
 dydt(6) = -mu/(R^3) * y(3);

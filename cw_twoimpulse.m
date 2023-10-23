@@ -1,4 +1,4 @@
-function [dv0_PLUS_start_burn,dvf_MINUS_off_burn,deltaV,deltaV_afterBurn] = cw_twoimpulse(dr,drf,dv0,period,t)
+function [dv0_plus,DV_0,DV_f,DV_total] = cw_twoimpulse(dr,drf,dv0,period,t)
 
 % This function uses the equation form of the Clohessy-Wiltshire equations
 % to calculate position and velocity (relative) with known input values.
@@ -30,10 +30,26 @@ phiVV = [cos(n*t),          2*sin(n*t) ,            0;
 
 % Final outputs
 dv0_PLUS_start_burn = inv(phiRV)*(drf + (-phiRR*dr));
-
 dvf_MINUS_off_burn = phiVR*dr + phiVV*dv0_PLUS_start_burn;
 
-deltaV = norm(dv0_PLUS_start_burn - dv0) + norm(dvf_MINUS_off_burn);
-deltaV_afterBurn = dv0_PLUS_start_burn + dv0;
+% Redefining to match common nomenclature equations
+dv0_plus = dv0_PLUS_start_burn;
+dv0_minus = dv0;
+dvf_minus = dvf_MINUS_off_burn;
+
+% Total Delta-V for initial burn
+DV_0 = dv0_plus - dv0_minus;
+
+% Total Delta-V for final (second) burn
+DV_f = -dvf_minus;
+
+% TOTAL DELTA V FOR MANEUVER
+DV_total = norm(DV_0) + norm(DV_f);
+
+% Old stuff
+%deltaV_afterBurn = dv0_PLUS_start_burn + dv0; % OLD VERSION
+%deltaV = norm(dv0_PLUS_start_burn - dv0) + norm(dvf_MINUS_off_burn); %
+%TOTAL DV ^^
+
 
 end % function
