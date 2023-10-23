@@ -111,7 +111,7 @@ figure()
 % % TARGET at mission start time, t0
 
 % Plot orbit path
-p1 = plot3(newstate0.target(:,1),newstate0.target(:,2),newstate0.target(:,3),'--k','LineWidth',1); 
+p1 = plot3(newstate0.target(:,1),newstate0.target(:,2),newstate0.target(:,3),'r','LineWidth',1); 
 
 % Plot Target position in orbit
 p2 = plot3(newstate0.target(end,1),newstate0.target(end,2),newstate0.target(end,3),'square','LineWidth',2);
@@ -119,7 +119,7 @@ p2.Color = 'b';
 
 % Show CHASER at mission time t0
 pc = plot3(rECI.chaser(1),rECI.chaser(2),rECI.chaser(3),'x','LineWidth',2);
-pc.Color = 'r';
+pc.Color = 'k';
 
 % Graph pretty 
 ylim padded 
@@ -1536,7 +1536,6 @@ grid on
 legend('','Target Orbit','Target','Chaser Path', 'Chaser', 'interpreter','latex','Location', 'best')
 
 %% Football 20m hold SUMMARY
-close all;
 % Written by JS 10/22/23
 
 disp(" ")
@@ -1571,20 +1570,8 @@ equalsTen = MET.Football2/(24) + t2tenDays.days; % yes
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Terminal maneuver: v-bar approach to rendezvous; "term"
-clc; close all;
 % Burn off old trajectory into super slow v-bar approach.
 t = t2tenDays.seconds; % remaining time in mission (brings us to 10.000 days)
-
-% Find burn dv
-% Where you want to end up
-term.drf = [0;0;0]; % km
-
-% Current dr and dv
-term.dr = Football2.relativePosition(end,1:3)';
-term.dv0 = Football2.relativeVelocity(end,1:3)'; 
-
-% Call function to find instantaneous dv burn (start of trajectory)
-[term.dv0_PLUS_start_burn,term.DV_total,term.dv_F,term.DV_total] = cw_twoimpulse(term.dr,term.drf,term.dv0,period,t);
 
 tspan = [0 t]; % length of trajectory flight
 
@@ -1593,14 +1580,21 @@ term.rECI_target = Football2.rECI_target_data(end,1:3)';
 term.vECI_target = Football2.vECI_target_data(end,1:3)';
 
 % Initial Relative position and veloc; CHASER
-term.dr = Football2.relativePosition(end,1:3)';
-term.dv = Football2.relativeVelocity(end,1:3)';
+% real #s 
+%term.dr = Football2.relativePosition(end,1:3)';
+%term.dv = Football2.relativeVelocity(end,1:3)';
 
+
+
+% Force it with perfect #s
+term.dr = [0; 0.02; 0];
+% Close approach velocity
 vc = term.dr(2)/ t;
+term.dv = [0; vc; 0];
 
 % Call v-bar propogate function
 state = [term.dr;term.dv;term.rECI_target;term.vECI_target];
-[~,term.statenew] = ode45(@vbar_approach,tspan,state,options,n.Target,vc,mu);
+[~,term.statenew] = ode45(@vbar_approach,tspan,state,options,h.target,n.Target,vc,mu);
 
 % Extract data after ODE
 term.rECI_target_data = [term.statenew(:,7),term.statenew(:,8), term.statenew(:,9)];
@@ -1621,10 +1615,11 @@ figure()
 % target, center of LVLH frame
 plot(0,0,'square','Linewidth',2)
 hold on
-% Hop trajectory
+
+% v-bar trajectory
 plot(term.relativePosition(:,2)*1000,term.relativePosition(:,1)*1000,'LineWidth',2)
 
-% Chaser position after hop
+% Chaser position after v-bar approach
 % Plot
 p1 = plot(term.relativePosition(end,2)*1000,term.relativePosition(end,1)*1000,'x','LineWidth',2);
 p1.Color = 'k';
@@ -1650,7 +1645,7 @@ legend('Target','$v$-bar approach', 'Rendezvous!','interpreter','latex','Locatio
 
 % Convert LVLH state data of the chaser on the first hop to ECI
 % 
-for i = 1:length(Football2.statenew)
+for i = 1:length(term.statenew)
     termQXx = QXx_from_rv_ECI(term.rECI_target_data(i,:)',term.vECI_target_data(i,:)');
     term.rECI_chaser_data(i,:) = (termQXx' * term.relativePosition(i,:)') + term.rECI_target_data(i,:)';
     term.vECI_chaser_data(i,:) = (termQXx' * term.relativeVelocity(i,:)') + term.vECI_target_data(i,:)';
@@ -1687,8 +1682,18 @@ set([xLab, yLab, zLab],'FontSize', 14)
 grid on 
 legend('','Target Orbit','Target','Chaser Path', 'Chaser', 'interpreter','latex','Location', 'best')
 
+% % % % Find burn dv
+% Where you want to end up
+term.drf = [0;0;0]; % km
+
+% Current dr and dv
+term.dr = Football2.relativePosition(end,1:3)';
+term.dv0 = Football2.relativeVelocity(end,1:3)'; 
+
+% Call function to find instantaneous dv burn (start of trajectory)
+[term.dv0_PLUS_start_burn,term.DV_total,term.dv_F,term.DV_total] = cw_twoimpulse(term.dr,term.drf,term.dv0,period,t);
+
 %% Plot last few hops of Mission in LVLH
-close all;
 figure()
 % target, center of LVLH frame
 plot(0,0,'square','Linewidth',2)

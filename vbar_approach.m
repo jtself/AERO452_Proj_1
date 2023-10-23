@@ -1,4 +1,4 @@
-function dydt = vbar_approach(time,state,n,vc,mu)
+function dydt = vbar_approach(time,state,h,n,vc,mu)
 %{
 For use in ode45 for propogating orbits through when using a terminal or
 v-bar approach for s/c rendezvous. 
@@ -17,7 +17,6 @@ y = state;
 
 rvect = state(7:9);
 v = state(10:12);
-h = norm(cross(rvect,v));
 R = norm(rvect);
 
 % DEPUTY, chaser
@@ -26,12 +25,10 @@ dydt(1) = y(4);
 dydt(2) = y(5);
 dydt(3) = y(6);
 
-% Linearized EOMs for acceleration IN V-BAR APPROACH SETTING (normal EOMs
-% plus v-bar terms for accel)
+% Linearized EOMs for acceleration IN V-BAR APPROACH SETTING
 dydt(4) = ((2*mu)/(R^3) + (h^2 / R^4)) * y(1) - (2 * dot(v,rvect)*(h/R^4)) * y(2) + 2*(h/R^2)*y(5) - 2*n*vc;
-dydt(5) = ((h^2)/(R^4) - (mu / R^3)) * y(2) + (2 * dot(v,rvect)*(h/R^4)) * y(1) - 2*(h/R^2)*y(4) + 0;
-dydt(6) = -mu/(R^3) * y(3) + 0;
-
+dydt(5) = ((h^2)/(R^4) - (mu / R^3)) * y(2) + (2 * dot(v,rvect)*(h/R^4)) * y(1) - 2*(h/R^2)*y(4);
+dydt(6) = -mu/(R^3) * y(3);
 
 % CHIEF, target
 % Just propogating forward like normal using acceleration function (pig function).
