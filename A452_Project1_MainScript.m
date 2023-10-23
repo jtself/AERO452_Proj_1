@@ -111,7 +111,7 @@ figure()
 % % TARGET at mission start time, t0
 
 % Plot orbit path
-p1 = plot3(newstate0.target(:,1),newstate0.target(:,2),newstate0.target(:,3),'--k','LineWidth',1); 
+p1 = plot3(newstate0.target(:,1),newstate0.target(:,2),newstate0.target(:,3),'r','LineWidth',1); 
 
 % Plot Target position in orbit
 p2 = plot3(newstate0.target(end,1),newstate0.target(end,2),newstate0.target(end,3),'square','LineWidth',2);
@@ -119,7 +119,7 @@ p2.Color = 'b';
 
 % Show CHASER at mission time t0
 pc = plot3(rECI.chaser(1),rECI.chaser(2),rECI.chaser(3),'x','LineWidth',2);
-pc.Color = 'r';
+pc.Color = 'k';
 
 % Graph pretty 
 ylim padded 
