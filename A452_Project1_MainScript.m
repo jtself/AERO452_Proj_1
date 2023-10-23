@@ -520,12 +520,166 @@ set([xLab, yLab, zLab],'FontSize', 14)
 grid on 
 legend('','Target Orbit','Target','Chaser Path', 'Chaser', 'interpreter','latex','Location', 'best')
 
+% <<<<<<< HEAD
+%% SECOND HOP - from 40 km to 1 km
+% =======
 %% MANEUVER 2: FOOTBALL HOLD SUMMARY 
 % Written by JS 10/21/23
 
 disp(" ")
 disp("--------- Hold 1: Football at 20 km - 40 km ---------") 
+% >>>>>>> main
 
+% Choose trajectory travel time.
+hours = 6; % your choice
+t = 3600*hours;
+
+% Where you want to end up
+Hop2.drf = [0;1;0];
+
+% relative motion for two impulse inputs
+[Hop2.r_relx0, Hop2.v_relx0, Hop2.a_relx0] = rva_relative(...
+    Football1.rECI_chaser_data(end,1:3)',Football1.vECI_chaser_data(end,1:3)',...
+    Football1.rECI_target_data(end,1:3)',Football1.vECI_target_data(end,1:3)'); % note that velocity component does not include dV for Football entry impulse
+
+
+% What the current relative distance and velocity (LVLH) is
+Hop2.dr = Football1.relativePosition(end,1:3)';
+Hop2.dv0 = Football1.relativeVelocity(end,1:3)'; 
+% Call function to find instantaneous dv burn (start of trajectory)
+[Hop2.dv0_PLUS_start_burn,Hop2.dvf_MINUS_off_burn,Hop2.deltaV,Hop2.deltaV_afterBurn] = cw_twoimpulse(Hop2.dr,Hop2.drf,Hop2.dv0,period,t);
+
+disp(" ")
+disp("Hop 2: 40km to 1km") 
+
+% dv0_PLUS_start_burn % just display it
+disp("Delta V: ")
+disp(Hop2.deltaV)
+disp("Delta V After Burn: ")
+disp(Hop2.deltaV_afterBurn)
+
+% SECOND HOP - from 40 km to 1 km
+
+% Choose trajectory travel time.
+hours = 6; % your choice
+t = 3600*hours;
+
+% Where you want to end up
+Hop2.drf = [0;1;0];
+
+% relative motion for two impulse inputs
+[Hop2.r_relx0, Hop2.v_relx0, Hop2.a_relx0] = rva_relative(...
+    Football1.rECI_chaser_data(end,1:3)',Football1.vECI_chaser_data(end,1:3)',...
+    Football1.rECI_target_data(end,1:3)',Football1.vECI_target_data(end,1:3)'); % note that velocity component does not include dV for Football entry impulse
+
+
+% What the current relative distance and velocity (LVLH) is
+Hop2.dr = Football1.relativePosition(end,1:3)';
+Hop2.dv0 = Football1.relativeVelocity(end,1:3)'; 
+% Call function to find instantaneous dv burn (start of trajectory)
+[Hop2.dv0_PLUS_start_burn,Hop2.dvf_MINUS_off_burn,Hop2.deltaV,Hop2.deltaV_afterBurn] = cw_twoimpulse(Hop2.dr,Hop2.drf,Hop2.dv0,period,t);
+
+disp(" ")
+disp("Hop 2: 40km to 1km") 
+
+% dv0_PLUS_start_burn % just display it
+disp("Delta V: ")
+disp(Hop2.deltaV)
+disp("Delta V After Burn: ")
+disp(Hop2.deltaV_afterBurn)
+
+
+%% Plot trajectory: 40km to 1km hop in LVLH
+
+%{
+Use linearized EOMs to hop. 
+state = [delx
+        dely
+        delz
+        delxdot
+        delydot
+        delzdot]
+%}
+
+tspan = [0 t]; % length of trajectory flight
+Hop2.dv = Hop2.dv0_PLUS_start_burn;
+Hop2.state = [Hop2.dr;Hop2.dv;Football1.rECI_target_data(end,1:3)';Football1.vECI_target_data(end,1:3)'];
+[Hop2.timenew,Hop2.statenew] = ode45(@linearizedEOMs_std,tspan,Hop2.state,options,h.target,mu);
+
+% Extract data after ODE
+Hop2.rECI_target_data = [Hop2.statenew(:,7),Hop2.statenew(:,8) Hop2.statenew(:,9)];
+Hop2.vECI_target_data = [Hop2.statenew(:,10),Hop2.statenew(:,11) Hop2.statenew(:,12)];
+Hop2.relativePosition = [Hop2.statenew(:,1),Hop2.statenew(:,2),Hop2.statenew(:,3)]; % since z is zero whole time
+Hop2.relativeVelocity = [Hop2.statenew(:,4),Hop2.statenew(:,5),Hop2.statenew(:,6)]; 
+
+figure()
+% target, center of LVLH frame
+plot(0,0,'square','Linewidth',2)
+hold on
+% Hop trajectory
+plot(Hop2.relativePosition(:,2),Hop2.relativePosition(:,1),'LineWidth',2)
+
+% Chaser position after hop
+
+% Plot
+p1 = plot(Hop2.relativePosition(end,2),Hop2.relativePosition(end,1),'x','LineWidth',2);
+p1.Color = 'k';
+xline(0)
+yline(0)
+
+% Graph pretty 
+ylim padded 
+xlim padded 
+xLab = xlabel('Downrange [km]','Interpreter','latex'); 
+yLab = ylabel('Altitude [km]','Interpreter','latex'); 
+plotTitle = title('LVLH frame: 100 km to 40 km hop','interpreter','latex'); 
+set(plotTitle,'FontSize',14,'FontWeight','bold') 
+set(gca,'FontName','Palatino Linotype') 
+set([xLab, yLab],'FontName','Palatino Linotype') 
+set(gca,'FontSize', 9) 
+set([xLab, yLab],'FontSize', 14) 
+grid on 
+legend('Target','Hop maneuver', 'Chaser final position','interpreter','latex','Location', 'best')
+
+%% Plot trajectory: 40km to 1km hop in ECI
+
+% Convert LVLH state data of the chaser on the first hop to ECI
+% 
+for i = 1:length(Hop2.timenew)
+    hop2QXx = QXx_from_rv_ECI(Hop2.rECI_target_data(i,:)',Hop2.vECI_target_data(i,:)');
+    Hop2.rECI_chaser_data(i,:) = (hop2QXx' * Hop2.relativePosition(i,:)') + Hop2.rECI_target_data(i,:)';
+    Hop2.vECI_chaser_data(i,:) = (hop2QXx' * Hop2.relativeVelocity(i,:)') + Hop2.vECI_target_data(i,:)';
+end
+
+figure
+   h1 = gca;
+   earth_sphere(h1)
+   hold on
+
+% TARGET at mission start time, t0
+p1 = plot3(Hop2.rECI_target_data(:,1),Hop2.rECI_target_data(:,2),Hop2.rECI_target_data(:,3),'r','LineWidth',2);
+p2 = plot3(Hop2.rECI_target_data(end,1),Hop2.rECI_target_data(end,2),Hop2.rECI_target_data(end,3),'*','LineWidth',5);
+% p2.Color = 'b';
+
+% Show CHASER at mission time t0
+p3 = plot3(Hop2.rECI_chaser_data(:,1),Hop2.rECI_chaser_data(:,2),Hop2.rECI_chaser_data(:,3),'k','LineWidth',1.5,'LineStyle','--');
+p4 = plot3(Hop2.rECI_chaser_data(end,1),Hop2.rECI_chaser_data(end,2),Hop2.rECI_chaser_data(end,3),'square','LineWidth',5);
+
+% Graph pretty 
+ylim padded 
+xlim padded 
+zlim padded
+xLab = xlabel('x','Interpreter','latex'); 
+yLab = ylabel('y','Interpreter','latex'); 
+zLab = zlabel('z','Interpreter','latex'); 
+plotTitle = title('Spacecrafts A and B at Mission t0','interpreter','latex'); 
+set(plotTitle,'FontSize',14,'FontWeight','bold') 
+set(gca,'FontName','Palatino Linotype') 
+set([xLab, yLab, zLab],'FontName','Palatino Linotype') 
+set(gca,'FontSize', 9) 
+set([xLab, yLab, zLab],'FontSize', 14) 
+grid on 
+legend('',' orbit','Target','Chaser', 'interpreter','latex','Location', 'best')
 
 disp("Delta-V for Hold 1 is: " + delta_v_intoFB1 + " m/s")
 
@@ -709,6 +863,9 @@ grid on
 legend('Target','','','100 km to 40 km hop','Football hold', '40 km to 1 km hop','Chaser position after hop','interpreter','latex','Location', 'best')
 
 
+%<<<<<<< HEAD
+
+% =======
 %% HOP 2: 40 km to 1 km SUMMARY 
 % Written by JS 10/21/23
 
@@ -1579,34 +1736,48 @@ t = t2tenDays.seconds; % remaining time in mission (brings us to 10.000 days)
 % Where you want to end up
 term.drf = [0;0;0]; % km
 
-% Current dr and dv
 term.dr = Football2.relativePosition(end,1:3)';
 term.dv0 = Football2.relativeVelocity(end,1:3)'; 
 
+
+state_rendezvous = [0 term.dr(2) 0 0 0 0 Football2.rECI_target_data(end,1:3) Football2.vECI_target_data(end,1:3)];
+
+vc = -term.dr(2)/t; % m/s
+
+% Current dr and dv
+term.dr = Football2.relativePosition(end,1:3)';
+term.dv0 = Football2.relativeVelocity(end,1:3)'; 
+term.dv0 = [term.dv0(1) 0 0];
+
 % Call function to find instantaneous dv burn (start of trajectory)
-[term.dv0_PLUS_start_burn,term.DV_total,term.dv_F,term.DV_total] = cw_twoimpulse(term.dr,term.drf,term.dv0,period,t);
+% [term.dv0_PLUS_start_burn,term.DV_total,term.dv_F,term.DV_total] = cw_twoimpulse(term.dr,term.drf,term.dv0,period,t);
 
 tspan = [0 t]; % length of trajectory flight
 
 % Initial ECI pos, veloc
-term.rECI_target = Football2.rECI_target_data(end,1:3)';
-term.vECI_target = Football2.vECI_target_data(end,1:3)';
+% term.rECI_target = Football2.rECI_target_data(end,1:3)';
+% term.vECI_target = Football2.vECI_target_data(end,1:3)';
 
 % Initial Relative position and veloc; CHASER
-term.dr = Football2.relativePosition(end,1:3)';
-term.dv = Football2.relativeVelocity(end,1:3)';
+% term.dr = Football2.relativePosition(end,1:3)';
+% term.dv = Football2.relativeVelocity(end,1:3)';
 
-vc = term.dr(2)/ t;
+% vc = term.dr(2)/ t;
 
 % Call v-bar propogate function
-state = [term.dr;term.dv;term.rECI_target;term.vECI_target];
-[~,term.statenew] = ode45(@vbar_approach,tspan,state,options,n.Target,vc,mu);
+% state = [term.dr;term.dv;term.rECI_target;term.vECI_target];
+% [~,term.statenew] = ode45(@vbar_approach,tspan,state,options,n.Target,vc,mu);
+
+
+
+[term.time,term.statenew] = ode45(@VBar_approach_CW,tspan,state_rendezvous,options,n.Target,vc,mu);
 
 % Extract data after ODE
-term.rECI_target_data = [term.statenew(:,7),term.statenew(:,8), term.statenew(:,9)];
-term.vECI_target_data = [term.statenew(:,10),term.statenew(:,11), term.statenew(:,12)];
+
 term.relativePosition = [term.statenew(:,1),term.statenew(:,2), term.statenew(:,3)];
 term.relativeVelocity = [term.statenew(:,4),term.statenew(:,5), term.statenew(:,6)]; 
+term.rECI_target_data = [term.statenew(:,7),term.statenew(:,8), term.statenew(:,9)];
+term.vECI_target_data = [term.statenew(:,10),term.statenew(:,11), term.statenew(:,12)];
 
 disp("Final position rel is: ")
 disp(term.relativePosition(end,1:3))
@@ -1650,7 +1821,7 @@ legend('Target','$v$-bar approach', 'Rendezvous!','interpreter','latex','Locatio
 
 % Convert LVLH state data of the chaser on the first hop to ECI
 % 
-for i = 1:length(Football2.statenew)
+for i = 1:length(term.time)
     termQXx = QXx_from_rv_ECI(term.rECI_target_data(i,:)',term.vECI_target_data(i,:)');
     term.rECI_chaser_data(i,:) = (termQXx' * term.relativePosition(i,:)') + term.rECI_target_data(i,:)';
     term.vECI_chaser_data(i,:) = (termQXx' * term.relativeVelocity(i,:)') + term.vECI_target_data(i,:)';
@@ -1687,6 +1858,9 @@ set([xLab, yLab, zLab],'FontSize', 14)
 grid on 
 legend('','Target Orbit','Target','Chaser Path', 'Chaser', 'interpreter','latex','Location', 'best')
 
+term.DV_total = norm(term.relativeVelocity(end,:) + vc);
+
+disp("Delta V from Terminal Vbar Approach: " + term.DV_total + " km/s")
 %% Plot last few hops of Mission in LVLH
 close all;
 figure()
@@ -1722,8 +1896,7 @@ set(gca,'FontSize', 9)
 set([xLab, yLab],'FontSize', 14) 
 grid on 
 legend('Target','','','Position correction burn','Football hold at 20 m', 'Final approach','Chaser position after hop','interpreter','latex','Location', 'best')
-
-
+ 
 %% V-bar approach (terminal) SUMMARY
 % Written by JS 10/22/23
 disp(" ")
@@ -1745,3 +1918,4 @@ disp("MET = " + MET.term/24 + " days")
 
 
 % Report final mission delta-v used (should be in the 3ish m/s range)
+% >>>>>>> main
