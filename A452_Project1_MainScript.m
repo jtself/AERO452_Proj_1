@@ -1494,7 +1494,7 @@ grid on
 legend('Target','Hop maneuver', 'Chaser final position','interpreter','latex','Location', 'best')
 
 
-%% NEXT: Plot the first FOOTBALL maneuver in ECI
+%% NEXT: Plot football 20 m hold in ECI
 
 % Convert LVLH state data of the chaser on the first hop to ECI
 % 
@@ -1509,12 +1509,12 @@ figure
    earth_sphere(h1)
    hold on
 
-% TARGET at mission start time, t0
+% TARGET after football 20 m hold
 p1 = plot3(Football2.rECI_target_data(:,1),Football2.rECI_target_data(:,2),Football2.rECI_target_data(:,3),'r','LineWidth',2);
 p2 = plot3(Football2.rECI_target_data(end,1),Football2.rECI_target_data(end,2),Football2.rECI_target_data(end,3),'square','LineWidth',2);
 p2.Color = 'b';
 
-% Show CHASER at mission time t0
+% Show CHASER after football 20 m hold
 p3 = plot3(Football2.rECI_chaser_data(:,1),Football2.rECI_chaser_data(:,2),Football2.rECI_chaser_data(:,3),'--r','LineWidth',1);
 p4 = plot3(Football2.rECI_chaser_data(end,1),Football2.rECI_chaser_data(end,2),Football2.rECI_chaser_data(end,3),'x','LineWidth',2);
 p4.Color = 'k';
@@ -1557,25 +1557,191 @@ disp("**** Mission Elapsed Time ****")
 disp("MET = " + MET.Football2 + " hours")
 disp("MET = " + MET.Football2/24 + " days")
 
-t2tenDays.hours = 10 - MET.Football2/24; % hours
-t2tenDays.seconds = t2tenDays.hours*60; % sec
-disp("We will need an additional " + t2tenDays.hours + " hours to make our ten day goal")
+t2tenDays.days = 10 - MET.Football2/24; % days
+t2tenDays.seconds = t2tenDays.days*24*3600; % sec
+disp("We will need an additional " + t2tenDays.days + " days to make our ten day goal")
 disp("Which is: " + t2tenDays.seconds + " seconds to make our ten day goal")
+
+% Check time
+equalsTen = MET.Football2/(24) + t2tenDays.days; % yes
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % % NEXT MANEUVER % %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% Final maneuver: v-bar approach to rendezvous. 
-
+%% Terminal maneuver: v-bar approach to rendezvous; "term"
+clc; close all;
 % Burn off old trajectory into super slow v-bar approach.
+t = t2tenDays.seconds; % remaining time in mission (brings us to 10.000 days)
 
-% Plot final approach in LVLH
+% Find burn dv
+% Where you want to end up
+term.drf = [0;0;0]; % km
 
-% Plot final approach in ECI
+% Current dr and dv
+term.dr = Football2.relativePosition(end,1:3)';
+term.dv0 = Football2.relativeVelocity(end,1:3)'; 
 
-% Plot last few hops of Mission in LVLH
+% Call function to find instantaneous dv burn (start of trajectory)
+[term.dv0_PLUS_start_burn,term.DV_total,term.dv_F,term.DV_total] = cw_twoimpulse(term.dr,term.drf,term.dv0,period,t);
 
-% Report final mission time (==10 days exactly)
+tspan = [0 t]; % length of trajectory flight
+
+% Initial ECI pos, veloc
+term.rECI_target = Football2.rECI_target_data(end,1:3)';
+term.vECI_target = Football2.vECI_target_data(end,1:3)';
+
+% Initial Relative position and veloc; CHASER
+term.dr = Football2.relativePosition(end,1:3)';
+term.dv = Football2.relativeVelocity(end,1:3)';
+
+vc = term.dr(2)/ t;
+
+% Call v-bar propogate function
+state = [term.dr;term.dv;term.rECI_target;term.vECI_target];
+[~,term.statenew] = ode45(@vbar_approach,tspan,state,options,n.Target,vc,mu);
+
+% Extract data after ODE
+term.rECI_target_data = [term.statenew(:,7),term.statenew(:,8), term.statenew(:,9)];
+term.vECI_target_data = [term.statenew(:,10),term.statenew(:,11), term.statenew(:,12)];
+term.relativePosition = [term.statenew(:,1),term.statenew(:,2), term.statenew(:,3)];
+term.relativeVelocity = [term.statenew(:,4),term.statenew(:,5), term.statenew(:,6)]; 
+
+disp("Final position rel is: ")
+disp(term.relativePosition(end,1:3))
+
+disp("Final velocity rel is: ")
+disp(term.relativeVelocity(end,1:3))
+
+% % % % Plot final approach in LVLH
+
+% Plot in LVLH
+figure()
+% target, center of LVLH frame
+plot(0,0,'square','Linewidth',2)
+hold on
+% Hop trajectory
+plot(term.relativePosition(:,2)*1000,term.relativePosition(:,1)*1000,'LineWidth',2)
+
+% Chaser position after hop
+% Plot
+p1 = plot(term.relativePosition(end,2)*1000,term.relativePosition(end,1)*1000,'x','LineWidth',2);
+p1.Color = 'k';
+xline(0)
+yline(0)
+
+% Graph pretty 
+ylim padded
+xlim padded 
+xLab = xlabel('Downrange [m]','Interpreter','latex'); 
+yLab = ylabel('Altitude [m]','Interpreter','latex'); 
+plotTitle = title('LVLH frame: Final approach: $v$-bar','interpreter','latex'); 
+set(plotTitle,'FontSize',14,'FontWeight','bold') 
+set(gca,'FontName','Palatino Linotype') 
+set([xLab, yLab],'FontName','Palatino Linotype') 
+set(gca,'FontSize', 9) 
+set([xLab, yLab],'FontSize', 14) 
+grid on 
+legend('Target','$v$-bar approach', 'Rendezvous!','interpreter','latex','Location', 'best')
+
+
+% % % Plot final approach in ECI
+
+% Convert LVLH state data of the chaser on the first hop to ECI
+% 
+for i = 1:length(Football2.statenew)
+    termQXx = QXx_from_rv_ECI(term.rECI_target_data(i,:)',term.vECI_target_data(i,:)');
+    term.rECI_chaser_data(i,:) = (termQXx' * term.relativePosition(i,:)') + term.rECI_target_data(i,:)';
+    term.vECI_chaser_data(i,:) = (termQXx' * term.relativeVelocity(i,:)') + term.vECI_target_data(i,:)';
+end
+
+figure
+   h1 = gca;
+   earth_sphere(h1)
+   hold on
+
+% TARGET after rendezvous
+p1 = plot3(term.rECI_target_data(:,1),term.rECI_target_data(:,2),term.rECI_target_data(:,3),'r','LineWidth',2);
+p2 = plot3(term.rECI_target_data(end,1),term.rECI_target_data(end,2),term.rECI_target_data(end,3),'square','LineWidth',2);
+p2.Color = 'b';
+
+% Show CHASER after rendezvous
+p3 = plot3(term.rECI_chaser_data(:,1),term.rECI_chaser_data(:,2),term.rECI_chaser_data(:,3),'--r','LineWidth',1);
+p4 = plot3(term.rECI_chaser_data(end,1),term.rECI_chaser_data(end,2),term.rECI_chaser_data(end,3),'x','LineWidth',2);
+p4.Color = 'k';
+
+% Graph pretty 
+ylim padded 
+xlim padded 
+zlim padded
+xLab = xlabel('x [km]','Interpreter','latex'); 
+yLab = ylabel('y [km]','Interpreter','latex'); 
+zLab = zlabel('z [km]','Interpreter','latex'); 
+plotTitle = title('ECI frame: Final $v$-bar approach and rendezvous','interpreter','latex'); 
+set(plotTitle,'FontSize',14,'FontWeight','bold') 
+set(gca,'FontName','Palatino Linotype') 
+set([xLab, yLab, zLab],'FontName','Palatino Linotype') 
+set(gca,'FontSize', 9) 
+set([xLab, yLab, zLab],'FontSize', 14) 
+grid on 
+legend('','Target Orbit','Target','Chaser Path', 'Chaser', 'interpreter','latex','Location', 'best')
+
+%% Plot last few hops of Mission in LVLH
+close all;
+figure()
+% target, center of LVLH frame
+plot(0,0,'square','Linewidth',2)
+hold on
+xline(0)
+yline(0)
+
+% Correction Burn
+plot(correction.relativePosition(:,2)*1000,correction.relativePosition(:,1)*1000,'--k','LineWidth',1)
+
+% 20 m football hold
+plot(Football2.relativePosition(:,2)*1000,Football2.relativePosition(:,1)*1000,'r','LineWidth',1)
+
+% v-bar final approach
+plot(term.relativePosition(:,2)*1000,term.relativePosition(:,1)*1000,'b','LineWidth',2)
+
+% Chaser position at rendezvous!
+p1 = plot(Football2.relativePosition(end,2)*1000,Football2.relativePosition(end,1)*1000,'x','LineWidth',2);
+p1.Color = 'k';
+
+% Graph pretty 
+ylim padded
+xlim padded 
+xLab = xlabel('Downrange [m]','Interpreter','latex'); 
+yLab = ylabel('Altitude [m]','Interpreter','latex'); 
+plotTitle = title('LVLH frame: First three maneuvers','interpreter','latex'); 
+set(plotTitle,'FontSize',14,'FontWeight','bold') 
+set(gca,'FontName','Palatino Linotype') 
+set([xLab, yLab],'FontName','Palatino Linotype') 
+set(gca,'FontSize', 9) 
+set([xLab, yLab],'FontSize', 14) 
+grid on 
+legend('Target','','','Position correction burn','Football hold at 20 m', 'Final approach','Chaser position after hop','interpreter','latex','Location', 'best')
+
+
+%% V-bar approach (terminal) SUMMARY
+% Written by JS 10/22/23
+disp(" ")
+disp("--------- Final approach (v-bar) ---------") 
+
+disp("Delta-V for terminal v-bar maneuver was: " + term.DV_total*1000 + " m/s")
+
+missionDV.term = missionDV.Football2 + term.DV_total*1000;
+
+disp("Total Mission Delta-V so far is: " + missionDV.term + " m/s")
+
+% Keep track of mission time
+currentManeuver = t/3600; % sec to hours
+MET.term = MET.Football2 + currentManeuver; % MISSION ELAPSED TIME (hours)
+disp(" ")
+disp("**** Mission Elapsed Time ****")
+disp("MET = " + MET.term + " hours")
+disp("MET = " + MET.term/24 + " days")
+
 
 % Report final mission delta-v used (should be in the 3ish m/s range)
