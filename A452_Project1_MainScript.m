@@ -553,16 +553,18 @@ disp(" ")
 disp("Hop 2: 40km to 1km") 
 
 % dv0_PLUS_start_burn % just display it
-disp("Delta V: ")
+disp("Hop 2 Delta V: ")
 disp(Hop2.deltaV)
-disp("Delta V After Burn: ")
+disp("Hop 2Delta V After Burn: ")
 disp(Hop2.deltaV_afterBurn)
+
+
 
 % SECOND HOP - from 40 km to 1 km
 
 % Choose trajectory travel time.
-hours = 6; % your choice
-t = 3600*hours;
+
+t = T.target;
 
 % Where you want to end up
 Hop2.drf = [0;1;0];
@@ -872,7 +874,7 @@ legend('Target','','','100 km to 40 km hop','Football hold', '40 km to 1 km hop'
 disp(" ")
 disp("--------- Hop 2: 40 km to 1 km ---------") 
 
-disp("Delta-V for Hold 2 is: " + Hop2.DV_total + " m/s")
+disp("Delta-V for Hop 2 is: " + Hop2.DV_total + " m/s")
 
 missionDV.hop2 = missionDV.football + Hop2.DV_total;
 
@@ -1096,7 +1098,7 @@ xline(0)
 yline(0)
 
 % Graph pretty 
-ylim padded
+ylim([-1 1])
 xlim padded 
 xLab = xlabel('Downrange [m]','Interpreter','latex'); 
 yLab = ylabel('Altitude [m]','Interpreter','latex'); 
@@ -1264,7 +1266,6 @@ set(gca,'FontSize', 9)
 set([xLab, yLab],'FontSize', 14) 
 grid on 
 legend('Target','Chaser relative position during hold', '','','Error box: $\pm 5$ m ','interpreter','latex','Location', 'best')
-
 %% Plot final position of both s/c after the hold period (ECI)
 % Written by JS 10/22/23
 
@@ -1693,7 +1694,7 @@ grid on
 legend('','Target Orbit','Target','Chaser Path', 'Chaser', 'interpreter','latex','Location', 'best')
 
 %% Football 20m hold SUMMARY
-close all;
+
 % Written by JS 10/22/23
 
 disp(" ")
@@ -1728,49 +1729,36 @@ equalsTen = MET.Football2/(24) + t2tenDays.days; % yes
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Terminal maneuver: v-bar approach to rendezvous; "term"
-clc; close all;
+close all; clc;
 % Burn off old trajectory into super slow v-bar approach.
 t = t2tenDays.seconds; % remaining time in mission (brings us to 10.000 days)
-
-% Find burn dv
+% %%%%%%%%%%%%%%%%% Find burn dv
 % Where you want to end up
 term.drf = [0;0;0]; % km
 
+% Current dr, dv
 term.dr = Football2.relativePosition(end,1:3)';
 term.dv0 = Football2.relativeVelocity(end,1:3)'; 
-
-
-state_rendezvous = [0 term.dr(2) 0 0 0 0 Football2.rECI_target_data(end,1:3) Football2.vECI_target_data(end,1:3)];
-
-vc = -term.dr(2)/t; % m/s
-
-% Current dr and dv
-term.dr = Football2.relativePosition(end,1:3)';
-term.dv0 = Football2.relativeVelocity(end,1:3)'; 
-term.dv0 = [term.dv0(1) 0 0];
-
+term.dr(1) = 0;
 % Call function to find instantaneous dv burn (start of trajectory)
-% [term.dv0_PLUS_start_burn,term.DV_total,term.dv_F,term.DV_total] = cw_twoimpulse(term.dr,term.drf,term.dv0,period,t);
+[term.dv0_PLUS_start_burn,term.DV_total,term.dv_F,term.DV_total] = cw_twoimpulse(term.dr,term.drf,term.dv0,period,t);
 
+% %%%%%%%%%%%%%%% Propogate trajectory
 tspan = [0 t]; % length of trajectory flight
 
 % Initial ECI pos, veloc
-% term.rECI_target = Football2.rECI_target_data(end,1:3)';
-% term.vECI_target = Football2.vECI_target_data(end,1:3)';
+term.rECI_target = Football2.rECI_target_data(end,1:3)';
+term.vECI_target = Football2.vECI_target_data(end,1:3)';
 
 % Initial Relative position and veloc; CHASER
-% term.dr = Football2.relativePosition(end,1:3)';
-% term.dv = Football2.relativeVelocity(end,1:3)';
-
-% vc = term.dr(2)/ t;
+vc = term.dr(2)/ t; % km/s
+term.dv = Football2.relativeVelocity(end,1:3)'; % km/s
+term.dv(2) = -vc;
+term.dv(1) = 0;
 
 % Call v-bar propogate function
-% state = [term.dr;term.dv;term.rECI_target;term.vECI_target];
-% [~,term.statenew] = ode45(@vbar_approach,tspan,state,options,n.Target,vc,mu);
-
-
-
-[term.time,term.statenew] = ode45(@VBar_approach_CW,tspan,state_rendezvous,options,n.Target,vc,mu);
+state = [term.dr;term.dv;term.rECI_target;term.vECI_target];
+[~,term.statenew] = ode45(@vbar_approach2,tspan,state,options,n.Target,mu);
 
 % Extract data after ODE
 
@@ -1821,7 +1809,7 @@ legend('Target','$v$-bar approach', 'Rendezvous!','interpreter','latex','Locatio
 
 % Convert LVLH state data of the chaser on the first hop to ECI
 % 
-for i = 1:length(term.time)
+for i = 1:length(term.statenew)
     termQXx = QXx_from_rv_ECI(term.rECI_target_data(i,:)',term.vECI_target_data(i,:)');
     term.rECI_chaser_data(i,:) = (termQXx' * term.relativePosition(i,:)') + term.rECI_target_data(i,:)';
     term.vECI_chaser_data(i,:) = (termQXx' * term.relativeVelocity(i,:)') + term.vECI_target_data(i,:)';
@@ -1858,11 +1846,10 @@ set([xLab, yLab, zLab],'FontSize', 14)
 grid on 
 legend('','Target Orbit','Target','Chaser Path', 'Chaser', 'interpreter','latex','Location', 'best')
 
-term.DV_total = norm(term.relativeVelocity(end,:) + vc);
 
-disp("Delta V from Terminal Vbar Approach: " + term.DV_total + " km/s")
+disp("Delta V from Terminal Vbar Approach: " + term.DV_total*1000 + " m/s")
 %% Plot last few hops of Mission in LVLH
-close all;
+
 figure()
 % target, center of LVLH frame
 plot(0,0,'square','Linewidth',2)
@@ -1888,7 +1875,7 @@ ylim padded
 xlim padded 
 xLab = xlabel('Downrange [m]','Interpreter','latex'); 
 yLab = ylabel('Altitude [m]','Interpreter','latex'); 
-plotTitle = title('LVLH frame: First three maneuvers','interpreter','latex'); 
+plotTitle = title('LVLH frame: Close approach','interpreter','latex'); 
 set(plotTitle,'FontSize',14,'FontWeight','bold') 
 set(gca,'FontName','Palatino Linotype') 
 set([xLab, yLab],'FontName','Palatino Linotype') 
